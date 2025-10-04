@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hotel El Rincón del Carmen</title>
+
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- JS base y carruseles -->
+  <script src="/js/app.js" defer></script>
+  <script src="/js/hero-carousel.js" defer></script>
+  <script src="/js/hotel.js" defer></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">El Rincón del Carmen</a>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="nav">
+        <a href="index.html" data-active="true">Inicio</a>
+        <a href="reservas.html">Reservas</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+
+      <div class="auth">
+        <a class="btn btn-login" href="#" id="btnLogin">Iniciar Sesión</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO: Carrusel de imágenes con panel de vidrio -->
+  <section class="hero-slider" aria-label="Promos">
+    <div class="hero-track" id="heroTrack">
+
+      <!-- Slide 1 -->
+      <article class="hero-slide is-active">
+        <img src="/image/pexels-minan1398-774042.jpg" alt="Piscina al atardecer en el hotel">
+        <div class="hero-overlay container">
+          <div class="hero-glass">
+            <p class="hero-kicker">Hotel Boutique</p>
+            <h1 class="hero-title alt-title">
+              Bienvenido a una experiencia única en
+              <span class="hotel-name">El Rincón del Carmen</span>.
+            </h1>
+            <p class="hero-subtitle">Descanso, elegancia y naturaleza en perfecta armonía.</p>
+            <a href="reservas.html" class="btn btn-hero">Reserva Ahora</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Slide 2 -->
+      <article class="hero-slide">
+        <img src="/image/pexels-pixabay-271618.jpg" alt="Habitación premium con vista al jardín">
+        <div class="hero-overlay container">
+          <div class="hero-glass">
+            <p class="hero-kicker">Habitaciones & Suites</p>
+            <h1 class="hero-title alt-title">
+              Espacios pensados para tu confort en
+              <span class="hotel-name">El Rincón del Carmen</span>
+            </h1>
+            <p class="hero-subtitle">Suites con jacuzzi, terraza y room service.</p>
+            <a href="reservas.html" class="btn btn-hero">Buscar Fechas</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Slide 3 -->
+      <article class="hero-slide">
+        <img src="/image/pexels-gapeppy1-2373201.jpg" alt="Spa con zonas húmedas y masaje">
+        <div class="hero-overlay container">
+          <div class="hero-glass">
+            <p class="hero-kicker">Spa & Wellness</p>
+            <h1 class="hero-title alt-title">
+              Renueva cuerpo y mente en
+              <span class="hotel-name">El Rincón del Carmen</span>
+            </h1>
+            <p class="hero-subtitle">Relájate con masajes, sauna y zonas húmedas.</p>
+            <a href="reservas.html" class="btn btn-hero">Conocer Más</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Controles del hero -->
+    <button class="hero-arrow prev" aria-label="Anterior">‹</button>
+    <button class="hero-arrow next" aria-label="Siguiente">›</button>
+    <div class="hero-dots" id="heroDots" role="tablist" aria-label="Selector de diapositivas"></div>
+  </section>
+
+  <!-- Sección: Nuestros Hoteles (carrusel con flechas dentro del track) -->
+  <section class="section-hotels">
+    <div class="section-head container">
+      <h2 class="section-title">Nuestros Hoteles</h2>
+      <p class="section-subtitle">Espacios diseñados para tu comodidad y descanso</p>
+    </div>
+
+    <div class="container">
+      <div class="hotels-track" id="hotelsTrack">
+        <!-- Flechas dentro del track (sticky) -->
+        <button class="track-arrow prev" aria-label="Anterior"><span>‹</span></button>
+
+        <!-- Las cards se inyectan por JS ANTES de la flecha "next" -->
+
+        <button class="track-arrow next" aria-label="Siguiente"><span>›</span></button>
+      </div>
+    </div>
+  </section>
+</body>
+</html>
