@@ -1,9 +1,9 @@
-
-(function(){
+// /js/hotel.js
+(() => {
   const track = document.getElementById('hotelsTrack');
   if (!track) return;
 
-  // ====== Data (ejemplo). Cambia rutas/imágenes a las tuyas ======
+  /* ===== Datos de ejemplo (ajusta a tus rutas reales) ===== */
   const hotels = [
     {
       id: "h1",
@@ -51,183 +51,186 @@
     }
   ];
 
-  // ===== Helpers =====
+  /* ===== Helpers ===== */
   const formatCOP = n =>
     new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 }).format(n);
 
   const starsHTML = n => "★".repeat(n) + "☆".repeat(5 - n);
 
-  // ===== Render =====
   const nextBtn = track.querySelector('.track-arrow.next');
   const prevBtn = track.querySelector('.track-arrow.prev');
 
-  const makeCard = h => {
+  /* ===== Render ===== */
+  const makeCard = (h) => {
     const f = h.features || {};
     return `
-    <article class="hotel-card" data-id="${h.id}">
-      <div class="hotel-media">
-        <img src="${h.image}" alt="${h.name}">
-        <span class="hotel-chip chip-score">${h.rating.toFixed(1)}</span>
-        <span class="hotel-chip chip-city">${h.city}</span>
-        <span class="hotel-chip chip-stars">${starsHTML(h.stars)}</span>
-      </div>
-
-      <div class="hotel-body">
-        <h3 class="hotel-title">${h.name}</h3>
-        <p class="hotel-sub">1 noche, 2 personas</p>
-
-        <div class="hotel-features">
-          <span class="feature"><i class="fi fi-bed"></i>${f.beds || 1} camas</span>
-          ${f.wifi ? `<span class="feature"><i class="fi fi-wifi"></i>Wi-Fi</span>` : ""}
-          ${f.minibar ? `<span class="feature"><i class="fi fi-mini"></i>Minibar</span>` : ""}
-          ${f.hotTub ? `<span class="feature"><i class="fi fi-hot-tub"></i>Jacuzzi</span>` : ""}
+      <article class="hotel-card" data-id="${h.id}">
+        <div class="hotel-media">
+          <img src="${h.image}" alt="${h.name}" loading="lazy">
+          <span class="hotel-chip chip-score">${h.rating.toFixed(1)}</span>
+          <span class="hotel-chip chip-city">${h.city}</span>
+          <span class="hotel-chip chip-stars">${starsHTML(h.stars)}</span>
         </div>
 
-        <div class="price-block">
-          <div>
-            <div class="price-now">${formatCOP(h.priceNow)}</div>
-            <div class="price-old">${formatCOP(h.priceOld)}</div>
+        <div class="hotel-body">
+          <h3 class="hotel-title">${h.name}</h3>
+          <p class="hotel-sub">1 noche, 2 personas</p>
+
+          <div class="hotel-features">
+            <span class="feature"><i class="fi fi-bed"></i>${f.beds || 1} camas</span>
+            ${f.wifi ? `<span class="feature"><i class="fi fi-wifi"></i>Wi-Fi</span>` : ""}
+            ${f.minibar ? `<span class="feature"><i class="fi fi-mini"></i>Minibar</span>` : ""}
+            ${f.hotTub ? `<span class="feature"><i class="fi fi-hot-tub"></i>Jacuzzi</span>` : ""}
           </div>
-          <div class="discount-badge">-${h.discount}%</div>
-        </div>
 
-        <div class="card-actions">
-          <div class="ref-date">Fecha de referencia: ${h.refDate}</div>
-          <button class="btn-card" data-book="${h.id}">Reservar</button>
+          <div class="price-block">
+            <div>
+              <div class="price-now">${formatCOP(h.priceNow)}</div>
+              <div class="price-old">${formatCOP(h.priceOld)}</div>
+            </div>
+            <div class="discount-badge">-${h.discount}%</div>
+          </div>
+
+          <div class="card-actions">
+            <div class="ref-date">Fecha de referencia: ${h.refDate}</div>
+            <button class="btn-card" data-book="${h.id}">Reservar</button>
+          </div>
         </div>
-      </div>
-    </article>`;
+      </article>`;
   };
 
   const frag = document.createDocumentFragment();
+  const insertBeforeNode = nextBtn || null;
   hotels.forEach(h => {
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = makeCard(h);
-    frag.appendChild(wrapper.firstElementChild);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = makeCard(h);
+    frag.appendChild(wrap.firstElementChild);
   });
-  track.insertBefore(frag, nextBtn);
+  track.insertBefore(frag, insertBeforeNode);
 
-  // ===== Carousel controls =====
-  const scrollStep = () => {
-    // desplaza aproximadamente un "viewport" del carrusel
+  /* ===== Arrows / Navegación ===== */
+  const getStep = () => {
     const card = track.querySelector('.hotel-card');
-    return card ? card.getBoundingClientRect().width + 16 : 300;
+    if (!card) return 320;
+    const gap = 16;
+    return Math.round(card.getBoundingClientRect().width + gap);
   };
-
-  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
 
   const updateArrows = () => {
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    const x = track.scrollLeft;
-    prevBtn.classList.toggle('is-disabled', x <= 2);
-    nextBtn.classList.toggle('is-disabled', x >= maxScroll - 2);
+    const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+    const x = Math.round(track.scrollLeft);
+    prevBtn?.classList.toggle('is-disabled', x <= 2);
+    nextBtn?.classList.toggle('is-disabled', x >= maxScroll - 2);
   };
 
-  prevBtn.addEventListener('click', () => {
-    track.scrollBy({ left: -scrollStep(), behavior: 'smooth' });
+  prevBtn?.addEventListener('click', () => {
+    track.scrollBy({ left: -getStep(), behavior: 'smooth' });
   });
-  nextBtn.addEventListener('click', () => {
-    track.scrollBy({ left:  scrollStep(), behavior: 'smooth' });
+  nextBtn?.addEventListener('click', () => {
+    track.scrollBy({ left:  getStep(), behavior: 'smooth' });
   });
+
   track.addEventListener('scroll', updateArrows);
   window.addEventListener('resize', updateArrows);
   updateArrows();
 
-  // Botón “Reservar” (demo)
+  /* ===== Arrastre con inercia ===== */
+  let dragging = false;
+  let startX = 0;
+  let startLeft = 0;
+  let lastX = 0;
+  let lastT = 0;
+  let velocity = 0;
+  let cancelClick = false;
+  let rafMomentum = 0;
+
+  const now = () => performance.now();
+  const getX = (ev) => ('touches' in ev) ? ev.touches[0].clientX : ev.clientX;
+
+  const onDown = (ev) => {
+    dragging = true;
+    cancelClick = false;
+    velocity = 0;
+    startX = getX(ev);
+    startLeft = track.scrollLeft;
+    lastX = startX;
+    lastT = now();
+    track.classList.add('is-dragging');
+    if (rafMomentum) { cancelAnimationFrame(rafMomentum); rafMomentum = 0; }
+  };
+
+  const onMove = (ev) => {
+    if (!dragging) return;
+    const x = getX(ev);
+    const dx = x - startX;
+    track.scrollLeft = startLeft - dx;
+
+    // velocidad
+    const t = now();
+    const dt = Math.max(1, t - lastT);
+    velocity = (x - lastX) / dt; // px/ms
+    lastX = x;
+    lastT = t;
+
+    if (Math.abs(dx) > 4) cancelClick = true; // bloqueo de click fantasma
+  };
+
+  const momentum = () => {
+    // desaceleración exponencial simple
+    const friction = 0.95;  // 0..1
+    const minV = 0.02;      // px/ms
+    const step = () => {
+      velocity *= friction;
+      if (Math.abs(velocity) < minV) {
+        rafMomentum = 0;
+        updateArrows();
+        return;
+      }
+      track.scrollLeft -= velocity * 16; // 16ms aprox por frame
+      rafMomentum = requestAnimationFrame(step);
+    };
+    rafMomentum = requestAnimationFrame(step);
+  };
+
+  const onUp = () => {
+    if (!dragging) return;
+    dragging = false;
+    track.classList.remove('is-dragging');
+    if (Math.abs(velocity) > 0.04) momentum();
+    updateArrows();
+    setTimeout(() => { cancelClick = false; }, 0);
+  };
+
+  // Mouse
+  track.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  // Touch
+  track.addEventListener('touchstart', onDown, { passive: true });
+  track.addEventListener('touchmove', onMove, { passive: true });
+  track.addEventListener('touchend', onUp);
+
+  // Evita “click” accidental tras arrastrar
+  track.addEventListener('click', (e) => {
+    if (cancelClick) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, true);
+
+  /* ===== Accesibilidad: teclado ===== */
+  track.setAttribute('tabindex', '0');
+  track.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') nextBtn?.click();
+    if (e.key === 'ArrowLeft')  prevBtn?.click();
+  });
+
+  /* ===== CTA Reservar (demo) ===== */
   track.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-book]');
     if (!btn) return;
-    const id = btn.dataset.book;
+    const id = btn.getAttribute('data-book');
     const hotel = hotels.find(h => h.id === id);
     alert(`Reservar: ${hotel?.name || id}`);
-    // aquí iría tu flujo real de reserva / navegación
-  });
-
-  // Accesibilidad: teclado
-  track.setAttribute('tabindex','0');
-  track.addEventListener('keydown', (e)=>{
-    if (e.key === 'ArrowRight') nextBtn.click();
-    if (e.key === 'ArrowLeft')  prevBtn.click();
   });
 })();
-
-// /js/hero-carousel.js
-(function () {
-  const root = document;
-  const track = root.querySelector('#heroTrack');
-  if (!track) return;
-
-  const slides = Array.from(track.querySelectorAll('.hero-slide'));
-  const btnPrev = root.querySelector('.hero-arrow.prev');
-  const btnNext = root.querySelector('.hero-arrow.next');
-  const dotsWrap = root.querySelector('#heroDots');
-
-  let idx = 0;
-  let timer = null;
-  const AUTOPLAY_MS = 6000;
-
-  // Dots
-  const dots = slides.map((_, i) => {
-    const b = root.createElement('button');
-    b.type = 'button';
-    b.setAttribute('role', 'tab');
-    b.setAttribute('aria-label', `Ir al slide ${i + 1}`);
-    dotsWrap.appendChild(b);
-    b.addEventListener('click', () => go(i, true));
-    return b;
-  });
-
-  function setActive(i) {
-    slides.forEach((s, k) => s.classList.toggle('is-active', k === i));
-    dots.forEach((d, k) => d.setAttribute('aria-selected', k === i ? 'true' : 'false'));
-  }
-
-  function go(n, user = false) {
-    idx = (n + slides.length) % slides.length;
-    setActive(idx);
-    if (user) restart();
-  }
-
-  function next() { go(idx + 1); }
-  function prev() { go(idx - 1); }
-
-  function start() {
-    stop();
-    timer = setInterval(next, AUTOPLAY_MS);
-  }
-  function stop() {
-    if (timer) clearInterval(timer);
-    timer = null;
-  }
-  function restart() {
-    stop();
-    start();
-  }
-
-  // Eventos
-  btnNext && btnNext.addEventListener('click', () => next());
-  btnPrev && btnPrev.addEventListener('click', () => prev());
-
-  const hero = root.querySelector('.hero-slider');
-  if (hero) {
-    hero.addEventListener('mouseenter', stop);
-    hero.addEventListener('mouseleave', start);
-    hero.addEventListener('focusin', stop);
-    hero.addEventListener('focusout', start);
-  }
-
-  // Gestos táctiles
-  let x0 = null;
-  track.addEventListener('touchstart', e => (x0 = e.touches[0].clientX), { passive: true });
-  track.addEventListener('touchend', e => {
-    if (x0 == null) return;
-    const dx = e.changedTouches[0].clientX - x0;
-    if (Math.abs(dx) > 40) (dx < 0 ? next : prev)();
-    x0 = null;
-  }, { passive: true });
-
-  // Init
-  setActive(0);
-  start();
-})();
-

@@ -12,6 +12,8 @@
   <script src="/js/app.js" defer></script>
   <script src="/js/hero-carousel.js" defer></script>
   <script src="/js/hotel.js" defer></script>
+  <script src="/js/galeria.js" defer></script>
+  
 </head>
 <body>
   <!-- Header -->
@@ -95,23 +97,227 @@
     <div class="hero-dots" id="heroDots" role="tablist" aria-label="Selector de diapositivas"></div>
   </section>
 
-  <!-- Sección: Nuestros Hoteles (carrusel con flechas dentro del track) -->
   <section class="section-hotels">
     <div class="section-head container">
-      <h2 class="section-title">Nuestros Hoteles</h2>
+      <h2 class="section-title" >Nuestros Hoteles</h2>
       <p class="section-subtitle">Espacios diseñados para tu comodidad y descanso</p>
     </div>
 
     <div class="container">
       <div class="hotels-track" id="hotelsTrack">
-        <!-- Flechas dentro del track (sticky) -->
+      
         <button class="track-arrow prev" aria-label="Anterior"><span>‹</span></button>
-
-        <!-- Las cards se inyectan por JS ANTES de la flecha "next" -->
-
         <button class="track-arrow next" aria-label="Siguiente"><span>›</span></button>
       </div>
     </div>
   </section>
+  <!-- ========= NUESTROS SERVICIOS ========= -->
+  <section id="servicios" class="section-services" aria-labelledby="servicesTitle">
+    <div class="container">
+      <header class="section-head section-head--brand">
+        <h2 id="servicesTitle" class="section-title">Nuestros Servicios</h2>
+        <p class="section-subtitle">Detallados, consistentes y pensados para tu confort</p>
+      </header>
+
+      <div class="services-grid">
+        <!-- Restaurante -->
+        <article class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="svg">
+              <circle cx="12" cy="12" r="5.2" />
+              <rect x="4.4" y="3.8" width="1.6" height="8.5" rx="0.8"/>
+              <path d="M7.2 3.8v8.5M6.4 7h1.6M6.4 9h1.6" />
+              <path d="M18.6 3.8v8.5M17 7.8c1.6 0 1.6 1 1.6 4.5" />
+            </svg>
+          </div>
+          <h3 class="service-title">Restaurante Gourmet</h3>
+          <p class="service-desc">Menú degustación, maridajes y productos locales de temporada.</p>
+          <ul class="service-tags">
+            <li>Desayuno buffet</li><li>Room service 24/7</li><li>Opciones veganas</li>
+          </ul>
+          <a class="service-cta" href="reservas.html#restaurante">Ver carta</a>
+        </article>
+
+        <!-- Spa -->
+        <article class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <!-- Icono: flor/lotus -->
+            <svg viewBox="0 0 24 24" class="svg">
+              <path d="M12 13c2.9-3.5 4.9-4.2 7.2-3.8-1 3.1-3.2 5.1-7.2 5.7"/>
+              <path d="M12 13c-2.9-3.5-4.9-4.2-7.2-3.8 1 3.1 3.2 5.1 7.2 5.7"/>
+              <path d="M12 7c1.8 1.9 2.6 3.7 2.4 6-1.5.9-3.3.9-4.8 0-.2-2.3.6-4.1 2.4-6Z"/>
+            </svg>
+          </div>
+          <h3 class="service-title">Spa & Wellness</h3>
+          <p class="service-desc">Masajes relajantes, rituales faciales y circuito de hidroterapia.</p>
+          <ul class="service-tags">
+            <li>Sauna</li><li>Zona húmeda</li><li>Terapias holísticas</li>
+          </ul>
+          <a class="service-cta" href="reservas.html#spa">Reservar spa</a>
+        </article>
+
+        <!-- Zonas húmedas -->
+        <article class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <!-- Icono: nadador -->
+            <svg viewBox="0 0 24 24" class="svg">
+              <circle cx="17.2" cy="7.2" r="1.6"/>
+              <path d="M3 17c2 .9 4 .9 6 0s4-.9 6 0 4 .9 6 0" />
+              <path d="M8.2 12.2c1.8-1.3 3.3-2.1 4.8-2.2 1.1 0 1.8.3 2.8 1.1l2.3 1.8"/>
+            </svg>
+          </div>
+          <h3 class="service-title">Zonas Húmedas</h3>
+          <p class="service-desc">Piscina climatizada, jacuzzi exterior y solárium con vista.</p>
+          <ul class="service-tags">
+            <li>Toallas incluidas</li><li>Pool bar</li>
+          </ul>
+          <a class="service-cta" href="reservas.html#piscina">Horarios</a>
+        </article>
+
+        <!-- Room service -->
+        <article class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <!-- Icono: campana -->
+            <svg viewBox="0 0 24 24" class="svg">
+              <path d="M4 18h16" />
+              <path d="M6 18v-3a6 6 0 0 1 12 0v3" />
+              <circle cx="12" cy="7.5" r="1" />
+            </svg>
+          </div>
+          <h3 class="service-title">Room Service</h3>
+          <p class="service-desc">Atención 24/7 directamente a tu habitación.</p>
+          <ul class="service-tags">
+            <li>Desayuno en cama</li><li>Carta nocturna</li>
+          </ul>
+          <a class="service-cta" href="reservas.html#roomservice">Solicitar</a>
+        </article>
+
+        <!-- Eventos -->
+        <article class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <!-- Icono: copas -->
+            <svg viewBox="0 0 24 24" class="svg">
+              <path d="M7 4h6l-1.5 5c-.5 1.6-2.5 2.4-4 .8L7 4Z"/>
+              <path d="M11 9 6 20" />
+              <path d="M17 4h-6l1.5 5c.5 1.6 2.5 2.4 4 .8L17 4Z"/>
+              <path d="M13 9 18 20" />
+            </svg>
+          </div>
+          <h3 class="service-title">Eventos & Bodas</h3>
+          <p class="service-desc">Salones modulables, banquetes y coordinación integral.</p>
+          <ul class="service-tags">
+            <li>Hasta 250 pax</li><li>AV profesional</li>
+          </ul>
+          <a class="service-cta" href="contacto.html#eventos">Solicitar propuesta</a>
+        </article>
+
+        <!-- Traslados -->
+        <article class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <!-- Icono: shuttle -->
+            <svg viewBox="0 0 24 24" class="svg">
+              <rect x="3" y="8" width="16" height="7" rx="2"/>
+              <rect x="5" y="9.5" width="4" height="2.5" rx="0.6"/>
+              <rect x="11" y="9.5" width="4" height="2.5" rx="0.6"/>
+              <circle cx="7.5" cy="17.5" r="1.5"/>
+              <circle cx="16.5" cy="17.5" r="1.5"/>
+            </svg>
+          </div>
+          <h3 class="service-title">Traslados & Tours</h3>
+          <p class="service-desc">Shuttle aeropuerto y excursiones personalizadas.</p>
+          <ul class="service-tags">
+            <li>Privado</li><li>Seguro incluido</li>
+          </ul>
+          <a class="service-cta" href="contacto.html#traslados">Consultar</a>
+        </article>
+      </div>
+    </div>
+  </section>
+  <!-- ===== GALERÍA ===== -->
+<section class="section-gallery" id="galeria">
+  <div class="section-head container">
+    <h2 class="section-title">Galería</h2>
+    <p class="section-subtitle">Descubre nuestros espacios y experiencias</p>
+  </div>
+
+  <div class="container">
+    <!-- Filtros -->
+    <div class="gallery-filters" role="tablist" aria-label="Filtrar galería">
+      <button class="chip is-active" role="tab" data-filter="*">Todas</button>
+      <button class="chip" role="tab" data-filter="habitaciones">Habitaciones</button>
+      <button class="chip" role="tab" data-filter="spa">Spa & Wellness</button>
+      <button class="chip" role="tab" data-filter="gastronomia">Gastronomía</button>
+      <button class="chip" role="tab" data-filter="exteriores">Exteriores</button>
+      <button class="chip" role="tab" data-filter="eventos">Eventos</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="gallery-grid" id="galleryGrid">
+      <!-- Item -->
+      <figure class="g-item wide exteriores" data-index="0">
+        <img src="/image/gallery/exteriores-01.jpg" alt="Terraza frente al mar" loading="lazy">
+        <figcaption>Terraza frente al mar</figcaption>
+      </figure>
+
+      <figure class="g-item habitaciones" data-index="1">
+        <img src="/image/gallery/habitacion-01.jpg" alt="Suite Deluxe" loading="lazy">
+        <figcaption>Suite Deluxe</figcaption>
+      </figure>
+
+      <figure class="g-item tall spa" data-index="2">
+        <img src="/image/gallery/spa-01.jpg" alt="Spa & Wellness" loading="lazy">
+        <figcaption>Spa & Wellness</figcaption>
+      </figure>
+
+      <figure class="g-item gastronomia" data-index="3">
+        <img src="/image/gallery/restaurant-01.jpg" alt="Restaurante gourmet" loading="lazy">
+        <figcaption>Restaurante gourmet</figcaption>
+      </figure>
+
+      <figure class="g-item exteriores xl" data-index="4">
+        <img src="/image/gallery/piscina-01.jpg" alt="Piscina principal" loading="lazy">
+        <figcaption>Piscina principal</figcaption>
+      </figure>
+
+      <figure class="g-item eventos" data-index="5">
+        <img src="/image/gallery/evento-01.jpg" alt="Salón de eventos" loading="lazy">
+        <figcaption>Salón de eventos</figcaption>
+      </figure>
+
+      <figure class="g-item habitaciones wide" data-index="6">
+        <img src="/image/gallery/habitacion-02.jpg" alt="Habitación con terraza" loading="lazy">
+        <figcaption>Habitación con terraza</figcaption>
+      </figure>
+
+      <figure class="g-item spa" data-index="7">
+        <img src="/image/gallery/spa-02.jpg" alt="Zona húmeda" loading="lazy">
+        <figcaption>Zona húmeda</figcaption>
+      </figure>
+
+      <figure class="g-item gastronomia tall" data-index="8">
+        <img src="/image/gallery/bar-01.jpg" alt="Coctelería de autor" loading="lazy">
+        <figcaption>Coctelería de autor</figcaption>
+      </figure>
+
+      <figure class="g-item exteriores" data-index="9">
+        <img src="/image/gallery/jardin-01.jpg" alt="Jardines" loading="lazy">
+        <figcaption>Jardines</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true" aria-label="Galería ampliada" role="dialog">
+    <button class="lb-btn lb-close" aria-label="Cerrar (Esc)">×</button>
+    <button class="lb-btn lb-prev"  aria-label="Anterior">‹</button>
+    <button class="lb-btn lb-next"  aria-label="Siguiente">›</button>
+    <div class="lb-inner">
+      <img id="lbImg" alt="">
+      <p class="lb-caption" id="lbCap"></p>
+    </div>
+  </div>
+</section>
+
+   
 </body>
 </html>
