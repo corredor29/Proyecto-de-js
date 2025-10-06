@@ -1,10 +1,12 @@
-// /js/auth-luxe.js — Auth sin alertas, diseño luxe
+// /js/auth-luxe.js — Modal de autenticación “Luxe” sin alertas + medidor de contraseña
 (() => {
   'use strict';
 
+  /* ===== Utils ===== */
   const $  = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
+  /* ===== Nodos ===== */
   const modal   = $('#luxeAuth');
   const card    = modal?.querySelector('.luxe-auth__card');
   const btnOpen = $('#btnLogin');
@@ -18,6 +20,7 @@
   const msgLogin = $('#luxeLoginMsg');
   const msgReg   = $('#luxeRegMsg');
 
+  /* ===== Storage ===== */
   const LS_USERS   = 'erc_users';
   const LS_SESSION = 'erc_session';
 
@@ -55,10 +58,10 @@
     catch { return str; }
   }
 
-  // UI helpers
-  const setMsg = (el, text, cls) => {
+  /* ===== UI helpers ===== */
+  const setMsg = (el, text = '', cls = '') => {
     if (!el) return;
-    el.textContent = text || '';
+    el.textContent = text;
     el.className = 'luxe-msg' + (cls ? ` ${cls}` : '');
   };
   const cleanMsgs = () => { setMsg(msgLogin); setMsg(msgReg); };
@@ -79,7 +82,7 @@
     fReg?.reset();
   };
 
-  // Mostrar/ocultar contraseña
+  /* Mostrar / ocultar contraseña */
   modal?.addEventListener('click', (e) => {
     const btn = e.target.closest('.luxe-eye');
     if (!btn) return;
@@ -88,55 +91,53 @@
     input.type = input.type === 'password' ? 'text' : 'password';
   });
 
-  // Abrir modal desde el botón del header (forzando eliminar viejos listeners con alert)
+  /* Interceptar botón del header y eliminar listeners con alert() antiguos */
   document.addEventListener('DOMContentLoaded', () => {
-    if (!btnOpen) return;
-
-    // 1) Limpia posibles listeners antiguos clonando el botón
-    const clone = btnOpen.cloneNode(true);
-    btnOpen.parentNode.replaceChild(clone, btnOpen);
-
-    // 2) Listener limpio (sin alertas) + captura para bloquear otros
-    clone.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      openModal(false);
-    }, true);
+    const btn = document.getElementById('btnLogin');
+    if (btn) {
+      const clone = btn.cloneNode(true);        // limpia listeners previos
+      btn.parentNode.replaceChild(clone, btn);
+      clone.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        openModal(false);
+      }, true); // capture, por si quedan otros
+    }
   });
 
-  // Cerrar modal
+  /* Cerrar modal */
   btnCloseEls.forEach(b => b.addEventListener('click', closeModal));
   modal?.addEventListener('click', (e) => { if (e.target.matches('.luxe-auth__overlay')) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal?.classList.contains('is-open')) closeModal(); });
 
-  // Cambiar estado
+  /* Cambiar estado login/registro */
   goRegister?.addEventListener('click', () => { cleanMsgs(); card?.classList.add('is-register'); });
   goLogin?.addEventListener('click', () => { cleanMsgs(); card?.classList.remove('is-register'); });
 
-  // Forgot (mensaje inline)
+  /* Forgot (mensaje inline, sin alertas) */
   $('#luxeForgot')?.addEventListener('click', (e) => {
     e.preventDefault();
     setMsg(msgLogin, 'Demo local: para restablecer, edita o borra el usuario en LocalStorage.', 'info');
   });
 
-  // Registro
+  /* Registro */
   fReg?.addEventListener('submit', async (e) => {
     e.preventDefault();
     cleanMsgs();
 
     const fd = new FormData(fReg);
-    const name  = (fd.get('name')  || '').toString().trim();
-    const email = (fd.get('email') || '').toString().trim().toLowerCase();
-    const pass  = (fd.get('password') || '').toString();
-    const terms = !!fd.get('terms');
+    const name   = (fd.get('name') || '').toString().trim();
+    const email  = (fd.get('email') || '').toString().trim().toLowerCase();
+    const pass   = (fd.get('password') || '').toString();
+    const terms  = !!fd.get('terms');
 
     if (!name || !email || !pass || !terms) return setMsg(msgReg, 'Completa todos los campos y acepta los términos.', 'err');
-    if (!isEmail(email))                 return setMsg(msgReg, 'Correo no válido.', 'err');
-    if (pass.length < 6)                 return setMsg(msgReg, 'La contraseña debe tener al menos 6 caracteres.', 'err');
+    if (!isEmail(email))                     return setMsg(msgReg, 'Correo no válido.', 'err');
+    if (pass.length < 6)                     return setMsg(msgReg, 'La contraseña debe tener al menos 6 caracteres.', 'err');
 
     const users = getUsers();
-    if (users.some(u => u.email === email)) return setMsg(msgReg, 'Ya existe una cuenta con ese correo.', 'err');
+    if (users.some(u => u.email === email))  return setMsg(msgReg, 'Ya existe una cuenta con ese correo.', 'err');
 
     const hash = await weakHash(pass);
     users.push({ name, email, pass: hash, createdAt: Date.now() });
@@ -149,21 +150,21 @@
     setTimeout(closeModal, 700);
   });
 
-  // Login
+  /* Login */
   fLogin?.addEventListener('submit', async (e) => {
     e.preventDefault();
     cleanMsgs();
 
     const fd = new FormData(fLogin);
-    const email = (fd.get('email') || '').toString().trim().toLowerCase();
-    const pass  = (fd.get('password') || '').toString();
+    const email    = (fd.get('email') || '').toString().trim().toLowerCase();
+    const pass     = (fd.get('password') || '').toString();
     const remember = !!fd.get('remember');
 
     if (!isEmail(email) || !pass) return setMsg(msgLogin, 'Revisa correo/contraseña.', 'err');
 
     const users = getUsers();
-    const user = users.find(u => u.email === email);
-    if (!user) return setMsg(msgLogin, 'Usuario no encontrado.', 'err');
+    const user  = users.find(u => u.email === email);
+    if (!user)   return setMsg(msgLogin, 'Usuario no encontrado.', 'err');
 
     const hash = await weakHash(pass);
     if (user.pass !== hash) return setMsg(msgLogin, 'Contraseña incorrecta.', 'err');
@@ -175,35 +176,161 @@
     setTimeout(closeModal, 500);
   });
 
-  // Header mini UI
-  function updateHeaderUI() {
-    const s = getSession();
-    const btn = $('#btnLogin');
-    if (!btn || !s) return;
 
-    btn.outerHTML = `
-      <div class="auth-mini">
-        <button class="btn btn-login" id="btnUser">${(s.name || 'Tu cuenta').split(' ')[0]}</button>
-        <div class="auth-mini-menu" id="miniMenu" hidden>
-          <div class="mini-row">${s.email}</div>
-          <button class="mini-action" id="btnLogout">Cerrar sesión</button>
-        </div>
-      </div>
-    `;
-    $('#btnUser')?.addEventListener('click', () => {
-      const mm = $('#miniMenu'); if (mm) mm.hidden = !mm.hidden;
-    });
-    $('#btnLogout')?.addEventListener('click', () => { clearSession(); location.reload(); });
-    document.addEventListener('click', (ev) => {
-      const wrap = ev.target.closest('.auth-mini');
-      if (!wrap) { const mm = $('#miniMenu'); if (mm) mm.hidden = true; }
-    });
+function updateHeaderUI() {
+  const s = getSession();
+  const loginBtn = document.getElementById('btnLogin');
+  if (!loginBtn) return;
+
+  if (!s) {
+    const freshBtn = document.getElementById('btnLogin');
+    freshBtn?.addEventListener('click', (e) => { e.preventDefault(); openModal(false); });
+    return;
   }
 
-  // Exponer eventos opcionales
+  const firstName = (s.name || 'Tu cuenta').trim().split(/\s+/)[0];
+  const initials  = s.name ? s.name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase()||'').join('') : 'RC';
+
+  loginBtn.outerHTML = `
+    <div class="auth-mini" id="authMini">
+      <button class="auth-user" id="btnUser" aria-expanded="false" aria-haspopup="menu">
+        <span class="auth-avatar" aria-hidden="true">${initials}</span>
+        <span class="auth-label">${firstName.toLowerCase()}</span>
+        <svg class="auth-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      <div class="auth-menu" id="miniMenu" role="menu" hidden>
+        <div class="auth-menu__header">
+          <span class="auth-avatar" aria-hidden="true">${initials}</span>
+          <div class="auth-id">
+            <strong>${s.name || 'Tu cuenta'}</strong>
+            <small>${s.email}</small>
+          </div>
+        </div>
+
+        <!-- Enlaces opcionales -->
+        <a href="reservas.html" class="auth-menu__item" role="menuitem">Mis reservas</a>
+
+        <button class="auth-menu__item danger" id="btnLogout" role="menuitem">Cerrar sesión</button>
+      </div>
+    </div>
+  `;
+
+  const userBtn = document.getElementById('btnUser');
+  const menu    = document.getElementById('miniMenu');
+  const wrap    = document.getElementById('authMini');
+
+  const showMenu = (show) => {
+    const willShow = typeof show === 'boolean' ? show : menu.hidden;
+    menu.hidden = !willShow;
+    userBtn.setAttribute('aria-expanded', String(willShow));
+  };
+
+  userBtn?.addEventListener('click', (e) => { e.stopPropagation(); showMenu(menu.hidden); });
+
+  document.addEventListener('click', (ev) => {
+    if (!ev.target.closest('#authMini') && !menu.hidden) showMenu(false);
+  });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') showMenu(false); });
+
+  document.getElementById('btnLogout')?.addEventListener('click', () => {
+    clearSession();
+    location.reload();
+  });
+}
+
+
+  /* ===== Password Strength Widget (integrado en REGISTRO) ===== */
+  function initPwWidget() {
+    const widget    = $('#pwWidget');
+    const passInput = $('#luxeRegister input[name="password"]');
+    if (!widget || !passInput) return; // si no existe, no hacemos nada
+
+    const fill  = $('#pwFill');
+    const label = $('#pwLabel');
+    const ring  = widget.querySelector('.ring .prog');
+    const tips  = widget.querySelectorAll('.pw-tips li');
+    const lock  = widget.querySelector('.pw-lock');
+
+    // Circunferencia (r=18 en el SVG)
+    const circ = 2 * Math.PI * 18;
+    if (ring) {
+      ring.style.strokeDasharray = String(circ);
+      ring.style.strokeDashoffset = String(circ);
+    }
+
+    const setProgress = (pct) => {
+      const off = circ * (1 - pct);
+      if (ring) ring.style.strokeDashoffset = String(off);
+      if (fill) fill.style.width = `${pct * 100}%`;
+    };
+
+    const scorePassword = (str) => {
+      const s = String(str || '');
+      const flags = {
+        len: s.length >= 6,
+        uc : /[A-ZÁÉÍÓÚÑ]/.test(s),
+        lc : /[a-záéíóúñ]/.test(s),
+        num: /\d/.test(s),
+        sym: /[^A-Za-z0-9]/.test(s),
+      };
+      const score = Object.values(flags).reduce((a, b) => a + (b ? 1 : 0), 0); // 0..5
+      return { flags, score };
+    };
+
+    const labels = ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Excelente'];
+
+    const sparkle = () => {
+      if (!lock) return;
+      for (let i = 0; i < 3; i++) {
+        const sp = document.createElement('span');
+        sp.className = 'spark';
+        const angle = Math.random() * 2 * Math.PI;
+        const dist  = 16 + Math.random() * 10;
+        sp.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+        sp.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+        lock.appendChild(sp);
+        setTimeout(() => sp.remove(), 900);
+      }
+    };
+
+    const update = () => {
+      const { flags, score } = scorePassword(passInput.value);
+
+      tips.forEach(li => {
+        const k = li.getAttribute('data-k');
+        if (k && flags[k]) li.classList.add('is-ok'); else li.classList.remove('is-ok');
+      });
+
+      const pct = Math.min(1, Math.max(0, score / 5));
+      setProgress(pct);
+
+      widget.classList.remove('weak','fair','good','strong');
+      let state = 'weak';
+      if (score >= 4) state = 'strong';
+      else if (score === 3) state = 'good';
+      else if (score === 2) state = 'fair';
+      widget.classList.add(state);
+
+      if (label) label.textContent = `Seguridad: ${labels[score] || '—'}`;
+      if (state === 'strong') sparkle();
+    };
+
+    update();
+    passInput.addEventListener('input', update);
+    $('#goRegister')?.addEventListener('click', () => setTimeout(() => passInput.focus(), 220));
+  }
+
+  /* Eventos públicos opcionales */
   window.addEventListener('open-auth',     () => openModal(false));
   window.addEventListener('open-register', () => openModal(true));
 
-  // Auto init (si ya hay sesión)
-  document.addEventListener('DOMContentLoaded', updateHeaderUI);
+  /* Auto init */
+  document.addEventListener('DOMContentLoaded', () => {
+    updateHeaderUI();
+    initPwWidget();
+  });
 })();

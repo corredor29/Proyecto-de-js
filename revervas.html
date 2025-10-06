@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reservas | El Rincón del Carmen</title>
+
+  <link rel="stylesheet" href="/css/reservas.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800;900&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+
+  <script src="/js/app.js" defer></script>
+  <script src="/js/auth.js" defer></script>
+  <script src="/js/reservas.js"></script>
+</head>
+<body>
+  <!-- Header (idéntico al de tu sitio) -->
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">El Rincón del Carmen</a>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="nav">
+        <a href="index.html">Inicio</a>
+        <a href="reservas.html" data-active="true">Reservas</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+      <div class="auth">
+        <a class="btn btn-login" href="#" id="btnLogin">Iniciar Sesión</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner simple -->
+<!-- Banner Reservas -->
+<section class="hero hero--reservas" aria-label="Reservas">
+    <div class="hero-inner">
+        <h1 class="hero-title">Reserva tu habitación</h1>
+        <p class="hero-subtitle">Encuentra la opción perfecta para tu estancia</p>
+    </div>
+    </section>
+
+  <!-- ===== Ribbon de reservas (reutiliza estilos de tu style.css) ===== -->
+  <section class="book-ribbon" id="bookRibbon" aria-label="Reserva tu habitación">
+    <div class="container">
+      <header class="ribbon-head">
+        <div class="ribbon-badge">
+          <strong>Reserva tu Habitación</strong>
+          <span>Mejor precio garantizado</span>
+        </div>
+        <div class="night-chip" id="rbNights" hidden>—</div>
+      </header>
+
+      <form id="bookingForm" class="ribbon-form" novalidate>
+        <label class="rf-field">
+          <span>Fecha de Entrada</span>
+          <input type="date" id="checkin" required>
+        </label>
+
+        <label class="rf-field">
+          <span>Fecha de Salida</span>
+          <input type="date" id="checkout" required>
+        </label>
+
+        <label class="rf-field">
+          <span>Número de Personas</span>
+          <select id="guests" required>
+            <option value="1">1 persona</option>
+            <option value="2" selected>2 personas</option>
+            <option value="3">3 personas</option>
+            <option value="4">4 personas</option>
+          </select>
+        </label>
+
+        <button class="rf-cta" type="submit">
+          <span class="txt">Buscar disponibilidad</span>
+          <span class="shine" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <p class="book-msg" id="bookingMsg" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- ===== Resultados ===== -->
+  <main id="resultados" class="section-hotels" style="padding-top:1.6rem">
+    <div class="container">
+      <div class="section-head">
+        <h2 class="section-title" id="resTitle">Disponibilidad</h2>
+        <p class="section-subtitle" id="resSubtitle">Selecciona fechas para ver opciones.</p>
+      </div>
+
+      <div class="res-grid" id="resultsGrid" aria-live="polite"></div>
+      <p id="resMsg" class="book-msg" style="text-align:center"></p>
+    </div>
+  </main>
+
+  <!-- Drawer de confirmación -->
+  <div class="res-overlay" id="resOverlay" hidden>
+    <section class="res-drawer" role="dialog" aria-modal="true" aria-labelledby="resvTitle">
+      <header class="res-drawer__head">
+        <h3 id="resvTitle">Confirmar reserva</h3>
+        <button class="res-close" id="resClose" aria-label="Cerrar">×</button>
+      </header>
+      <div class="res-drawer__body" id="resvBody"><!-- dinámico --></div>
+      <footer class="res-drawer__foot">
+        <button class="luxe-btn" id="resCancel">Cancelar</button>
+        <button class="luxe-btn luxe-btn--primary" id="resConfirm">Confirmar</button>
+      </footer>
+    </section>
+  </div>
+  <ul class="benefits" aria-label="Beneficios incluidos">
+    <li class="benefit">
+      <span class="ic ic-cancel" aria-hidden="true"></span>
+      Cancelación flexible
+    </li>
+    <li class="benefit">
+      <span class="ic ic-break" aria-hidden="true"></span>
+      Desayuno incluido
+    </li>
+    <li class="benefit">
+      <span class="ic ic-wifi" aria-hidden="true"></span>
+      Wi-Fi Premium
+    </li>
+  </ul>
+
+
+</body>
+</html>
