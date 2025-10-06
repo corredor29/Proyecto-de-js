@@ -600,3 +600,238 @@ a:focus, button:focus{ outline: 3px solid rgba(160,82,45,.35); outline-offset: 2
   background: transparent !important;
   box-shadow: none !important;
 }
+/* ===== AUTH LUXE (modal premium) ===== */
+:root{
+  --lux-bg: rgba(20,20,20,.45);
+  --lux-stroke: rgba(255,255,255,.18);
+  --lux-shadow: 0 20px 50px rgba(0,0,0,.35);
+  --lux-gold: #c8a97e;
+  --lux-ink: #0f172a;
+  --lux-cream: #f8f6f2;
+  --auth-side-img: url('/image/pexels-minan1398-774042.jpg'); /* cambia si quieres */
+}
+
+.luxe-auth{
+  position: fixed; inset: 0; z-index: 1200;
+  display: none; align-items: center; justify-content: center;
+}
+.luxe-auth.is-open{ display:flex; }
+.luxe-auth__overlay{
+  position:absolute; inset:0; background: rgba(0,0,0,.72);
+  backdrop-filter: blur(2px);
+}
+
+.luxe-auth__card{
+  position: relative; z-index: 1;
+  width: min(980px, 94vw); min-height: 520px;
+  display: grid; grid-template-columns: 42% 58%;
+  border-radius: 22px; overflow: hidden;
+  background: var(--lux-bg);
+  border: 1px solid var(--lux-stroke);
+  box-shadow: var(--lux-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+@media (max-width: 880px){
+  .luxe-auth__card{ grid-template-columns: 1fr; min-height: auto; }
+}
+
+/* Lado visual */
+.luxe-auth__side{
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.45)),
+    var(--auth-side-img) center/cover no-repeat;
+  display: grid; align-content: end; gap: .35rem;
+  padding: 1.8rem;
+  color: #fff;
+}
+@media (max-width: 880px){ .luxe-auth__side{ display:none; } }
+.luxe-auth__brand{
+  display:flex; align-items:center; gap:.6rem;
+  font-weight: 800; letter-spacing:.2px;
+}
+.luxe-auth__logo{
+  width:42px; height:42px; border-radius:999px; display:grid; place-items:center;
+  background: radial-gradient(65% 65% at 50% 30%, #fff, #f3e7d9);
+  color: var(--lux-ink);
+  box-shadow: 0 10px 24px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.85);
+  font-weight: 900;
+}
+.luxe-auth__tag{
+  margin:0; opacity:.92; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+}
+
+/* Panel formularios */
+.luxe-auth__panel{
+  background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.98));
+  color: var(--lux-ink);
+  padding: 1.4rem 1.6rem 1.6rem;
+  display:grid; grid-template-rows:auto 1fr;
+}
+@media (max-width: 420px){ .luxe-auth__panel{ padding: 1.1rem; } }
+
+.luxe-auth__head{
+  display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-bottom:.4rem;
+}
+.luxe-auth__title{
+  margin:0; font-weight:900; letter-spacing:.2px;
+  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+}
+.luxe-auth__title .state-register{ display:none; }
+.luxe-auth__card.is-register .luxe-auth__title .state-login{ display:none; }
+.luxe-auth__card.is-register .luxe-auth__title .state-register{ display:inline; }
+
+.luxe-auth__close{
+  width:38px; height:38px; border-radius:999px; border:none; cursor:pointer;
+  background:#fff; box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  font-size:22px; line-height:1;
+}
+
+/* Formularios */
+.luxe-form{ display:grid; gap:.75rem; align-content:start; }
+.luxe-form.state-register{ display:none; }
+.luxe-auth__card.is-register .luxe-form.state-login{ display:none; }
+.luxe-auth__card.is-register .luxe-form.state-register{ display:grid; }
+
+.luxe-field{ display:grid; gap:.35rem; }
+.luxe-field > span{ font-weight:700; font-size:.92rem; color:#374151; }
+.luxe-field input{
+  width:100%; padding:.8rem .9rem; border-radius:14px; border:1px solid #e5e7eb;
+  font-size:1rem; background:#fff;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.luxe-field input:focus{
+  outline:none; border-color: var(--lux-gold);
+  box-shadow: 0 0 0 4px rgba(200,169,126,.18);
+}
+
+.luxe-pass{ position:relative; }
+.luxe-eye{
+  position:absolute; top:50%; right:8px; transform:translateY(-50%);
+  width:38px; height:38px; border-radius:12px; border:1px solid #ececec;
+  background:#fff; cursor:pointer;
+}
+
+.luxe-row{
+  display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+}
+.luxe-check{ display:inline-flex; align-items:center; gap:.5rem; }
+.luxe-check input{ width:18px; height:18px; }
+.luxe-link, .luxe-link-btn{
+  background:none; border:none; color:#1f2937; text-decoration:underline; cursor:pointer; font-weight:700;
+}
+.luxe-link:hover, .luxe-link-btn:hover{ color:#111; }
+
+.luxe-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:.5rem; padding:.85rem 1.1rem; border-radius:14px; border:1px solid transparent;
+  cursor:pointer; font-weight:800; letter-spacing:.2px;
+  transition: filter .18s ease, transform .06s ease, box-shadow .18s;
+}
+.luxe-btn:active{ transform: translateY(1px); }
+.luxe-btn--primary{
+  background: linear-gradient(135deg, var(--lux-gold), #b08963);
+  color:#111; box-shadow: 0 16px 36px rgba(200,169,126,.35);
+}
+.luxe-btn--primary:hover{ filter:brightness(1.05); }
+
+/* Mensajes inline */
+.luxe-msg{ margin:.25rem 0 0; min-height: 1.25rem; font-weight:700; font-size:.92rem; }
+.luxe-msg.ok{ color:#15803d; }
+.luxe-msg.err{ color:#b91c1c; }
+.luxe-msg.info{ color:#1d4ed8; }
+
+/* Pequeños */
+.luxe-swap{ margin:.35rem 0 0; font-size:.95rem; }
+
+/* Animación entrada */
+.luxe-auth__card{
+  opacity:0; transform: translateY(10px) scale(.985);
+  animation: luxIn .35s ease forwards;
+}
+@keyframes luxIn{
+  to{ opacity:1; transform:none; }
+}
+
+/* ===== PASSWORD LUXURY WIDGET ===== */
+.pw-widget{
+  margin-top:.6rem; display:grid; gap:.6rem; position:relative;
+  --ok:#22c55e; --mid:#f59e0b; --low:#ef4444; --brand:var(--color-brand,#a0522d);
+}
+
+/* Candado con anillo de progreso */
+.pw-lock{
+  position:absolute; left:-68px; top:-4px; width:52px; height:52px;
+  display:grid; place-items:center;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.18));
+}
+.pw-lock .ring{ width:52px; height:52px; transform: rotate(-90deg); }
+.pw-lock .ring .bg{ fill:none; stroke:rgba(0,0,0,.08); stroke-width:8; }
+.pw-lock .ring .prog{
+  fill:none; stroke: url(#pwGradient);
+  stroke-width:8; stroke-linecap:round;
+  stroke-dasharray:113;           /* 2πr con r=18 */
+  stroke-dashoffset:113;          /* comienza vacío */
+  transition: stroke-dashoffset .6s ease;
+}
+.pw-lock .icon{
+  position:absolute; font-size:20px; line-height:1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.25));
+}
+.pw-lock.glow .icon{ animation: pwGlow 1.4s ease-in-out infinite; }
+@keyframes pwGlow{
+  0%,100%{ transform:scale(1); text-shadow:0 0 0 rgba(255,255,255,0); }
+  50%{ transform:scale(1.06); text-shadow:0 0 16px rgba(255,255,255,.65); }
+}
+
+/* Pequeños destellos cuando es “Excelente” */
+.pw-lock .spark{
+  position:absolute; width:6px; height:6px; border-radius:50%;
+  background: radial-gradient(circle,#fff,rgba(255,255,255,.2) 60%,transparent 70%);
+  animation: pwSpark .9s ease-out forwards; opacity:0;
+}
+@keyframes pwSpark{
+  0%{ transform: translate(0,0) scale(.6); opacity:0; }
+  30%{ opacity:1; }
+  100%{ transform: translate(var(--dx),var(--dy)) scale(0); opacity:0; }
+}
+
+/* Barra de fuerza */
+.pw-meter{
+  position:relative; height:10px; border-radius:999px; overflow:hidden;
+  background: linear-gradient(180deg,#f3f4f6,#eaeaea);
+  border:1px solid #e9e9e9;
+}
+.pw-meter .fill{
+  position:absolute; inset:0; width:0%;
+  background: linear-gradient(90deg,#f59e0b,var(--brand),#22c55e);
+  background-size:200% 100%;
+  animation: pwSheen 2.3s linear infinite;
+  transition: width .45s ease;
+}
+@keyframes pwSheen{ from{background-position:0% 0} to{background-position:200% 0} }
+
+/* Etiqueta de estado */
+.pw-label{ font-weight:700; font-size:.92rem; color:#374151; }
+.pw-widget.weak   .pw-label{ color:var(--low); }
+.pw-widget.fair   .pw-label{ color:#d97706; }
+.pw-widget.good   .pw-label{ color:#16a34a; }
+.pw-widget.strong .pw-label{ color:#15803d; }
+
+/* Tips / requisitos */
+.pw-tips{
+  display:flex; flex-wrap:wrap; gap:.4rem; margin-top:-.2rem; padding-left:0; list-style:none;
+}
+.pw-tips li{
+  font-size:.8rem; color:#374151; padding:.28rem .55rem; border-radius:999px;
+  border:1px dashed #d7d7d7; background:#fff; transition:all .25s ease;
+}
+.pw-tips li.is-ok{
+  border-color: transparent; color:#065f46;
+  background:linear-gradient(180deg,#e9fdf3,#daf7ea);
+  position:relative;
+}
+.pw-tips li.is-ok::before{
+  content:"✓"; font-weight:900; margin-right:.4rem; color:#059669;
+}

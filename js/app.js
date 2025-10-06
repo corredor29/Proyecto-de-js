@@ -1,8 +1,10 @@
 // app.js — utilidades globales de la UI
 (() => {
+  'use strict';
+
   const doc = document;
-  const $  = (s) => doc.querySelector(s);
-  const $$ = (s) => Array.from(doc.querySelectorAll(s));
+  const $  = (s, root = doc) => root.querySelector(s);
+  const $$ = (s, root = doc) => Array.from(root.querySelectorAll(s));
 
   /* ========== CSS var: --header-height (para hero 100vh real) ========== */
   const header = $('.site-header');
@@ -31,13 +33,11 @@
     const toggleNav = () => (nav.classList.contains('open') ? closeNav() : openNav());
 
     toggle.addEventListener('click', toggleNav);
-
-    doc.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeNav();
-    });
+    doc.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNav(); });
     $$('.nav a').forEach((a) => a.addEventListener('click', closeNav));
   }
 
+  /* ========== Marcar link activo por URL (si no está seteado) ========== */
   (() => {
     const links = $$('.nav a');
     if (!links.length) return;
@@ -60,11 +60,6 @@
 
     if (!found) links[0]?.setAttribute('data-active', 'true');
   })();
-
-  $('#btnLogin')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    alert('Aquí abrirías tu modal de autenticación.');
-  });
 
   (() => {
     const cards = $$('.service-card');

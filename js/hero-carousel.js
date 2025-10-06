@@ -11,8 +11,7 @@
 
   if (!track || slides.length === 0) return;
 
-  // --- Config ---
-  const AUTOPLAY_MS = 6000;       // set to 0 to disable autoplay
+  const AUTOPLAY_MS = 6000;       
   const SWIPE_THRESHOLD = 40;     // px
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

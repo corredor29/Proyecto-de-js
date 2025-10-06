@@ -3,7 +3,6 @@
   const track = document.getElementById('hotelsTrack');
   if (!track) return;
 
-  /* ===== Datos de ejemplo (ajusta a tus rutas reales) ===== */
   const hotels = [
     {
       id: "h1",
@@ -231,6 +230,5 @@
     if (!btn) return;
     const id = btn.getAttribute('data-book');
     const hotel = hotels.find(h => h.id === id);
-    alert(`Reservar: ${hotel?.name || id}`);
   });
 })();

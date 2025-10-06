@@ -13,6 +13,8 @@
   <script src="/js/hero-carousel.js" defer></script>
   <script src="/js/hotel.js" defer></script>
   <script src="/js/galeria.js" defer></script>
+  <script src="/js/auth.js?v=3" defer></script>
+  <script src="/js/luxe-pass.js" defer></script>
   
 </head>
 <body>
@@ -317,7 +319,132 @@
     </div>
   </div>
 </section>
+  <!-- ===== AUTH LUXE MODAL ===== -->
+  <div class="luxe-auth" id="luxeAuth" aria-hidden="true">
+    <div class="luxe-auth__overlay" data-close></div>
 
-   
+    <section class="luxe-auth__card" role="dialog" aria-modal="true" aria-labelledby="luxeAuthTitle">
+      <!-- Lado visual -->
+      <aside class="luxe-auth__side" aria-hidden="true">
+        <div class="luxe-auth__brand">
+          <span class="luxe-auth__logo">RC</span>
+          <strong>El Rincón del Carmen</strong>
+        </div>
+        <p class="luxe-auth__tag">Hospitalidad de autor</p>
+      </aside>
+
+      <!-- Panel formularios -->
+      <div class="luxe-auth__panel">
+        <header class="luxe-auth__head">
+          <h2 id="luxeAuthTitle" class="luxe-auth__title">
+            <span class="state-login">Iniciar sesión</span>
+            <span class="state-register">Crear cuenta</span>
+          </h2>
+          <button class="luxe-auth__close" data-close aria-label="Cerrar">×</button>
+        </header>
+
+        <!-- LOGIN -->
+        <form id="luxeLogin" class="luxe-form state-login" novalidate>
+          <label class="luxe-field">
+            <span>Correo electrónico</span>
+            <input type="email" name="email" placeholder="tucorreo@dominio.com" required>
+          </label>
+
+          <label class="luxe-field">
+            <span>Contraseña</span>
+            <div class="luxe-pass">
+              <input type="password" name="password" placeholder="••••••••" required>
+              <button class="luxe-eye" type="button" aria-label="Mostrar/ocultar contraseña">👁</button>
+            </div>
+          </label>
+
+          <div class="luxe-row">
+            <label class="luxe-check">
+              <input type="checkbox" name="remember">
+              <span>Recuérdame</span>
+            </label>
+            <a href="#" class="luxe-link" id="luxeForgot">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <button class="luxe-btn luxe-btn--primary" type="submit">Entrar</button>
+
+          <p class="luxe-swap">
+            ¿No tienes cuenta?
+            <button class="luxe-link-btn" type="button" id="goRegister">Crear cuenta</button>
+          </p>
+
+          <p class="luxe-msg" id="luxeLoginMsg" role="status" aria-live="polite"></p>
+        </form>
+
+        <!-- REGISTRO -->
+        <form id="luxeRegister" class="luxe-form state-register" novalidate>
+          <label class="luxe-field">
+            <span>Nombre</span>
+            <input type="text" name="name" placeholder="Tu nombre" required>
+          </label>
+
+          <label class="luxe-field">
+            <span>Correo electrónico</span>
+            <input type="email" name="email" placeholder="tucorreo@dominio.com" required>
+          </label>
+
+          <label class="luxe-field">
+            <span>Contraseña</span>
+            <div class="luxe-pass">
+              <input type="password" name="password" minlength="6" placeholder="Mínimo 6 caracteres" required>
+              <button class="luxe-eye" type="button" aria-label="Mostrar/ocultar contraseña">👁</button>
+            </div>
+          </label>
+
+          <!-- WIDGET DE CONTRASEÑA INTEGRADO -->
+          <div class="pw-widget" id="pwWidget">
+            <div class="pw-lock" aria-hidden="true">
+              <svg class="ring" viewBox="0 0 52 52" width="52" height="52">
+                <defs>
+                  <linearGradient id="pwGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%"  stop-color="#f59e0b"/>
+                    <stop offset="50%" stop-color="var(--color-brand)"/>
+                    <stop offset="100%" stop-color="#22c55e"/>
+                  </linearGradient>
+                </defs>
+                <circle class="bg"   cx="26" cy="26" r="18"></circle>
+                <circle class="prog" cx="26" cy="26" r="18"></circle>
+              </svg>
+              <span class="icon">🔒</span>
+            </div>
+
+            <div class="pw-label" id="pwLabel">Seguridad: —</div>
+            <div class="pw-meter"><div class="fill" id="pwFill"></div></div>
+
+            <ul class="pw-tips" id="pwTips">
+              <li data-k="len">6+ caracteres</li>
+              <li data-k="uc">Mayúscula</li>
+              <li data-k="lc">Minúscula</li>
+              <li data-k="num">Número</li>
+              <li data-k="sym">Símbolo</li>
+            </ul>
+          </div>
+          <!-- /WIDGET -->
+
+          <label class="luxe-check">
+            <input type="checkbox" name="terms" required>
+            <span>Acepto los términos y condiciones</span>
+          </label>
+
+          <button class="luxe-btn luxe-btn--primary" type="submit">Registrarme</button>
+
+          <p class="luxe-swap">
+            ¿Ya tienes cuenta?
+            <button class="luxe-link-btn" type="button" id="goLogin">Iniciar sesión</button>
+          </p>
+
+          <p class="luxe-msg" id="luxeRegMsg" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </div>
+  <!-- ===== /AUTH LUXE MODAL ===== -->
+
+
 </body>
 </html>
