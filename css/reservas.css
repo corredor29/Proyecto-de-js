@@ -465,3 +465,109 @@ body{ font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, s
   opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
 }
 .toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); }
+
+/* Botón peligro (cancelar) */
+.luxe-btn.danger{
+  border:1px solid #fecaca;
+  color:#b91c1c;
+  background:#fff;
+}
+.luxe-btn.danger:hover{
+  background:#fef2f2;
+  border-color:#fca5a5;
+}
+
+/* Toast simple (usado por showToast) */
+.toast{
+  position:fixed; left:50%; bottom:18px;
+  transform:translateX(-50%) translateY(12px);
+  background:#111; color:#fff; padding:.6rem .9rem;
+  border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.25);
+  opacity:0; transition:opacity .2s, transform .2s; z-index:1400;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) }
+
+.btn-card.btn-card--danger{
+  background: #fee2e2;
+  color:#b91c1c;
+  border:1px solid #fecaca;
+}
+.btn-card.btn-card--danger:hover{ filter:brightness(.98); }
+
+
+/* Overlay con blur */
+.res-overlay { backdrop-filter: blur(2px); transition: opacity .25s ease; }
+
+/* Drawer con animación "spring" */
+.res-drawer--edit{
+  transform: translateY(24px) scale(.985);
+  opacity: 0;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  transition: transform .45s cubic-bezier(.2,.9,.25,1.2), opacity .35s ease;
+}
+.res-drawer--edit.is-open{ transform: translateY(0) scale(1); opacity: 1; }
+
+/* Layout campos + botón */
+.edit-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:16px;
+  align-items:end;
+}
+
+/* Previsualización de noches/total */
+.edit-preview{ display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
+.preview-pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 12px; border-radius:999px; background:#f7f7f9;
+  border:1px solid #eee; box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+}
+.preview-pill .pp-k{ color:#6b7280; font-size:.9rem; }
+.preview-pill .pp-v{ font-weight:700; }
+
+/* Botón Guardar con micro-interacciones */
+.btn-commit{
+  position:relative; min-width:140px; overflow:hidden; border-radius:12px;
+  transition: transform .15s ease, box-shadow .2s ease;
+}
+.btn-commit:hover{ transform: translateY(-1px); box-shadow:0 10px 20px rgba(16,185,129,.18); }
+.btn-commit:active{ transform: translateY(0); }
+
+/* Loading */
+.btn-commit.is-loading .btn-commit__label{ opacity:0; }
+.btn-commit.is-loading::after{
+  content:""; position:absolute; inset:0; display:grid; place-items:center;
+}
+.btn-commit.is-loading::before{
+  content:""; position:absolute; top:50%; left:50%;
+  width:18px; height:18px; margin:-9px 0 0 -9px;
+  border:2px solid rgba(255,255,255,.5); border-top-color:#fff;
+  border-radius:50%; animation:spin .7s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* Done (check + confetti) */
+.btn-commit.is-done{ background:linear-gradient(135deg,#16a34a,#22c55e)!important; }
+.btn-commit.is-done::before{
+  content:"✓"; position:absolute; inset:0; display:grid; place-items:center;
+  font-weight:800; color:#fff; font-size:18px;
+}
+.btn-commit.is-done::after{
+  content:""; position:absolute; inset:-10px; pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 30%, #22c55e 0 3px, transparent 4px),
+    radial-gradient(circle at 80% 40%, #16a34a 0 3px, transparent 4px),
+    radial-gradient(circle at 55% 75%, #34d399 0 3px, transparent 4px);
+  animation: confetti .6s ease-out forwards; opacity:.9;
+}
+@keyframes confetti{ from{ transform:scale(.6); opacity:.9; } to{ transform:scale(1.2); opacity:0; } }
+
+.res-overlay { z-index: 900; }
+.luxe-auth   { z-index: 1000; }
+
+.res-overlay.auth-on-top {
+  z-index: 900;          /* se mantiene por debajo del login */
+  pointer-events: none;  /* evita que el drawer capture los clics */
+  filter: blur(1px) brightness(.98); /* opcional: sutil “en segundo plano” */
+}

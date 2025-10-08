@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reservas | El Rincón del Carmen</title>
+  <title>Contacto | El Rincón del Carmen</title>
 
-  <link rel="stylesheet" href="/css/reservas.css" />
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/contacto.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800;900&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 
-  <!-- Scripts (cargar en este orden) -->
+  <!-- Scripts de tu app -->
   <script src="/js/app.js" defer></script>
   <script src="/js/auth.js" defer></script>
-  <script src="/js/reservas.js" defer></script>
+  <script src="/js/contacto.js" defer></script>
 </head>
 <body>
   <!-- Header -->
@@ -24,8 +24,8 @@
       </button>
       <nav class="nav">
         <a href="index.html">Inicio</a>
-        <a href="reservas.html" data-active="true">Reservas</a>
-        <a href="contacto.html">Contacto</a>
+        <a href="reservas.html">Reservas</a>
+        <a href="contacto.html" data-active="true">Contacto</a>
       </nav>
       <div class="auth">
         <a class="btn btn-login" href="#" id="btnLogin">Iniciar Sesión</a>
@@ -33,152 +33,140 @@
     </div>
   </header>
 
-  <!-- Banner Reservas -->
-  <section class="hero hero--reservas" aria-label="Reservas">
-    <div class="hero-inner">
-      <h1 class="hero-title">Reserva tu habitación</h1>
-      <p class="hero-subtitle">Encuentra la opción perfecta para tu estancia</p>
+  <!-- Hero mejorado -->
+  <section class="hero hero--contacto" aria-label="Contáctanos">
+    <div class="hero-inner" data-reveal>
+      <span class="hero-eyebrow">El Rincón del Carmen</span>
+      <h1 class="hero-title">¿Hablamos?</h1>
+      <p class="hero-subtitle">Estamos a un mensaje de planear tu próxima escapada.</p>
+
+      <div class="hero-ctas">
+        <a href="#contactForm" class="btn-hero btn-hero--primary">Escríbenos</a>
+        <a href="#mapa" class="btn-hero btn-hero--ghost">Cómo llegar</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat"><strong>24/7</strong><span>Recepción</span></div>
+        <div class="stat"><strong>+12k</strong><span>Huéspedes felices</span></div>
+        <div class="stat"><strong>5★</strong><span>Atención</span></div>
+      </div>
     </div>
   </section>
 
-  <!-- ===== Ribbon de reservas ===== -->
-  <section class="book-ribbon" id="bookRibbon" aria-label="Reserva tu habitación">
-    <div class="container">
-      <header class="ribbon-head">
-        <div class="ribbon-badge">
-          <strong>Reserva tu Habitación</strong>
-          <span>Mejor precio garantizado</span>
+  <!-- Mapa + tarjetas -->
+  <section class="contact-wrap">
+    <div class="container contact-grid">
+      <!-- Mapa con iframe -->
+      <div class="map-card" id="mapa" data-reveal>
+        <iframe 
+          id="gmap"
+          class="gmap"
+          src="https://www.google.com/maps?q=10.3910,-75.4794&z=15&output=embed"
+          width="100%" 
+          height="440" 
+          style="border:0;" 
+          loading="lazy" 
+          referrerpolicy="no-referrer-when-downgrade"
+          aria-label="Mapa de ubicación">
+        </iframe>
+
+        <!-- Controles sobre el mapa -->
+        <div class="map-controls">
+          <button id="btnDirections" class="mc-btn" type="button">Cómo llegar</button>
+          <div class="mc-row">
+            <a id="gmapsLink" class="mc-chip" target="_blank" rel="noopener">Google Maps</a>
+            <a id="wazeLink" class="mc-chip" target="_blank" rel="noopener">Waze</a>
+          </div>
         </div>
-        <div class="night-chip" id="rbNights" hidden>—</div>
-      </header>
+      </div>
 
-      <form id="bookingForm" class="ribbon-form" novalidate>
-        <label class="rf-field">
-          <span>Fecha de Entrada</span>
-          <input type="date" id="checkin" required>
+      <!-- Cómo encontrarnos -->
+      <aside class="info-cards" data-reveal>
+        <article class="info-card">
+          <h3>Dirección</h3>
+          <p id="addrTxt">Calle 123 # 4-56, Barrio Centro Histórico</p>
+          <div class="ic-actions">
+            <button class="ic-btn" data-copy="#addrTxt">Copiar</button>
+            <a class="ic-btn" id="icHowTo" target="_blank" rel="noopener">Cómo llegar</a>
+          </div>
+        </article>
+
+        <article class="info-card">
+          <h3>Horario</h3>
+          <p>Recepción 24/7 · Check-in 3:00 pm · Check-out 12:00 m</p>
+        </article>
+
+        <article class="info-card">
+          <h3>Teléfono & WhatsApp</h3>
+          <p><a id="telLink" href="tel:+573001112233">+57 300 111 22 33</a></p>
+          <p><a id="waLink" href="https://wa.me/573001112233" target="_blank" rel="noopener">Escríbenos por WhatsApp</a></p>
+        </article>
+
+        <article class="info-card">
+          <h3>Correo</h3>
+          <p><a id="mailLink" href="mailto:hola@rincondelcarmen.com">hola@rincondelcarmen.com</a></p>
+        </article>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Formulario -->
+  <section class="section-contact-form">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <h2 class="section-title">Escríbenos</h2>
+        <p class="section-subtitle">Tiempo de respuesta promedio: menos de 24 horas</p>
+      </div>
+
+      <form id="contactForm" class="contact-form" novalidate data-reveal>
+        <div class="cf-row">
+          <label class="cf-field">
+            <span>Nombre</span>
+            <input type="text" id="cfName" name="name" placeholder="Tu nombre" required>
+          </label>
+          <label class="cf-field">
+            <span>Correo</span>
+            <input type="email" id="cfEmail" name="email" placeholder="tucorreo@dominio.com" required>
+          </label>
+        </div>
+
+        <div class="cf-row">
+          <label class="cf-field">
+            <span>Teléfono (opcional)</span>
+            <input type="tel" id="cfPhone" name="phone" placeholder="+57 300 000 0000">
+          </label>
+          <label class="cf-field">
+            <span>Motivo</span>
+            <select id="cfSubject" name="subject" required>
+              <option value="" selected disabled>Selecciona una opción</option>
+              <option value="consulta">Consulta general</option>
+              <option value="reserva">Soporte con reserva</option>
+              <option value="evento">Eventos/Grupos</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="cf-field">
+          <span>Mensaje</span>
+          <textarea id="cfMessage" name="message" rows="6" placeholder="Cuéntanos en qué te ayudamos" required></textarea>
         </label>
 
-        <label class="rf-field">
-          <span>Fecha de Salida</span>
-          <input type="date" id="checkout" required>
+        <label class="cf-check">
+          <input type="checkbox" id="cfConsent" required>
+          <span>Acepto que me contacten para gestionar mi consulta.</span>
         </label>
 
-        <label class="rf-field">
-          <span>Número de Personas</span>
-          <select id="guests" required>
-            <option value="1">1 persona</option>
-            <option value="2" selected>2 personas</option>
-            <option value="3">3 personas</option>
-            <option value="4">4 personas</option>
-          </select>
-        </label>
+        <div class="cf-actions">
+          <button class="luxe-btn" type="reset">Limpiar</button>
+          <button class="luxe-btn luxe-btn--primary" type="submit" id="cfSubmit">Enviar</button>
+        </div>
 
-        <button class="rf-cta" type="submit">
-          <span class="txt">Buscar disponibilidad</span>
-          <span class="shine" aria-hidden="true"></span>
-        </button>
+        <p class="cf-msg" id="cfMsg" role="status" aria-live="polite"></p>
       </form>
-
-      <p class="book-msg" id="bookingMsg" aria-live="polite"></p>
     </div>
   </section>
 
-  <!-- ===== Resultados ===== -->
-  <main id="resultados" class="section-hotels" style="padding-top:1.6rem">
-    <div class="container">
-      <div class="section-head">
-        <h2 class="section-title" id="resTitle">Disponibilidad</h2>
-        <p class="section-subtitle" id="resSubtitle">Selecciona fechas para ver opciones.</p>
-      </div>
-
-      <!-- Grid de tarjetas de habitaciones (se llena con JS) -->
-      <div class="res-grid" id="resultsGrid" aria-live="polite"></div>
-
-      <!-- Mensaje de estado / sin resultados -->
-      <p id="resMsg" class="book-msg" style="text-align:center"></p>
-    </div>
-  </main>
-
-  <!-- ===== Drawer de confirmación de reserva ===== -->
-  <div class="res-overlay" id="resOverlay" hidden>
-    <section class="res-drawer" role="dialog" aria-modal="true" aria-labelledby="resvTitle">
-      <header class="res-drawer__head">
-        <h3 id="resvTitle">Confirmar reserva</h3>
-        <button class="res-close" id="resClose" aria-label="Cerrar">×</button>
-      </header>
-
-      <!-- Contenido dinámico de la reserva seleccionada -->
-      <div class="res-drawer__body" id="resvBody"></div>
-
-      <footer class="res-drawer__foot">
-        <button class="luxe-btn" id="resCancel">Cancelar</button>
-        <!-- Botón de confirmación en el drawer -->
-        <button class="luxe-btn luxe-btn--primary" id="resConfirm">Sí</button>
-      </footer>
-    </section>
-  </div>
-
-  <!-- Beneficios -->
-  <section>
-    <ul class="benefits" aria-label="Beneficios incluidos">
-      <li class="benefit">
-        <span class="ic ic-cancel" aria-hidden="true"></span>
-        Cancelación flexible
-      </li>
-      <li class="benefit">
-        <span class="ic ic-break" aria-hidden="true"></span>
-        Desayuno incluido
-      </li>
-      <li class="benefit">
-        <span class="ic ic-wifi" aria-hidden="true"></span>
-        Wi-Fi Premium
-      </li>
-    </ul>
-  </section>
-
-<!-- ===== Modal/Drawer: Editar reserva ===== -->
-<div id="editOverlay" class="res-overlay" hidden>
-  <div class="res-drawer res-drawer--edit" role="dialog" aria-modal="true">
-    <div class="res-drawer__head">
-      <h3>Editar reserva</h3>
-      <button id="editClose" class="res-close" aria-label="Cerrar">×</button>
-    </div>
-
-    <div class="res-drawer__body">
-      <div class="edit-grid">
-        <label class="rf-field">
-          <span>Nueva entrada</span>
-          <input type="date" id="editCheckin">
-        </label>
-
-        <label class="rf-field">
-          <span>Nueva salida</span>
-          <input type="date" id="editCheckout">
-        </label>
-
-        <button id="editSave" class="luxe-btn luxe-btn--primary btn-commit" type="button">
-          <span class="btn-commit__label">Guardar</span>
-        </button>
-      </div>
-
-      <!-- Previsualización dinámica -->
-      <div class="edit-preview" aria-live="polite">
-        <div class="preview-pill">
-          <span class="pp-k">Noches</span>
-          <span class="pp-v" id="editNights">—</span>
-        </div>
-        <div class="preview-pill">
-          <span class="pp-k">Total estimado</span>
-          <span class="pp-v" id="editTotal">—</span>
-        </div>
-      </div>
-
-      <p class="res-note">Validamos disponibilidad y que no se cruce con otras reservas tuyas.</p>
-    </div>
-  </div>
-</div>
-
-  <!-- ===== AUTH LUXE MODAL ===== -->
+  <!-- ===== AUTH LUXE MODAL (completo) ===== -->
   <div class="luxe-auth" id="luxeAuth" aria-hidden="true">
     <div class="luxe-auth__overlay" data-close></div>
 
@@ -301,16 +289,5 @@
       </div>
     </section>
   </div>
-
-  <!-- ===== MIS RESERVAS (solo usuario logueado) ===== -->
-  <section id="myBookingsSec" class="section-hotels" hidden>
-    <div class="container">
-      <div class="section-head">
-        <h2 class="section-title">Mis reservas</h2>
-        <p class="section-subtitle"></p>
-      </div>
-      <div id="myBookingsList" class="res-grid"></div>
-    </div>
-  </section>
 </body>
 </html>
