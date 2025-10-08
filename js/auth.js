@@ -1,4 +1,3 @@
-// /js/auth-luxe.js — Modal de autenticación “Luxe” sin alertas + medidor de contraseña
 (() => {
   'use strict';
 
@@ -9,7 +8,6 @@
   /* ===== Nodos ===== */
   const modal   = $('#luxeAuth');
   const card    = modal?.querySelector('.luxe-auth__card');
-  const btnOpen = $('#btnLogin');
 
   const btnCloseEls = $$('[data-close]', modal);
   const goRegister  = $('#goRegister');
@@ -82,28 +80,13 @@
     fReg?.reset();
   };
 
-  /* Mostrar / ocultar contraseña */
+  /* Mostrar / ocultar contraseña (ojo) */
   modal?.addEventListener('click', (e) => {
     const btn = e.target.closest('.luxe-eye');
     if (!btn) return;
     const input = btn.previousElementSibling;
     if (!input) return;
     input.type = input.type === 'password' ? 'text' : 'password';
-  });
-
-  /* Interceptar botón del header y eliminar listeners con alert() antiguos */
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btnLogin');
-    if (btn) {
-      const clone = btn.cloneNode(true);        // limpia listeners previos
-      btn.parentNode.replaceChild(clone, btn);
-      clone.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        openModal(false);
-      }, true); // capture, por si quedan otros
-    }
   });
 
   /* Cerrar modal */
@@ -115,13 +98,56 @@
   goRegister?.addEventListener('click', () => { cleanMsgs(); card?.classList.add('is-register'); });
   goLogin?.addEventListener('click', () => { cleanMsgs(); card?.classList.remove('is-register'); });
 
-  /* Forgot (mensaje inline, sin alertas) */
+  /* Forgot (mensaje inline) */
   $('#luxeForgot')?.addEventListener('click', (e) => {
     e.preventDefault();
     setMsg(msgLogin, 'Demo local: para restablecer, edita o borra el usuario en LocalStorage.', 'info');
   });
 
-  /* Registro */
+  /* ===== Header: botón Login -> abre modal (limpia listeners antiguos) ===== */
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btnLogin');
+    if (btn) {
+      const clone = btn.cloneNode(true);
+      btn.parentNode.replaceChild(clone, btn);
+      clone.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        openModal(false);
+      }, true);
+    }
+  });
+
+  /* ===== Login ===== */
+  fLogin?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    cleanMsgs();
+
+    const fd = new FormData(fLogin);
+    const email    = (fd.get('email') || '').toString().trim().toLowerCase();
+    const pass     = (fd.get('password') || '').toString();
+    const remember = !!fd.get('remember');
+
+    if (!isEmail(email) || !pass) return setMsg(msgLogin, 'Revisa correo/contraseña.', 'err');
+
+    const users = getUsers();
+    const user  = users.find(u => u.email === email);
+    if (!user)   return setMsg(msgLogin, 'Usuario no encontrado.', 'err');
+
+    const hash = await weakHash(pass);
+    if (user.pass !== hash) return setMsg(msgLogin, 'Contraseña incorrecta.', 'err');
+
+    const sessionObj = { name: user.name, email: user.email, ts: Date.now() };
+    saveSession(sessionObj, remember);
+    setMsg(msgLogin, '¡Bienvenido!', 'ok');
+
+    updateHeaderUI();
+    window.dispatchEvent(new CustomEvent('auth:login', { detail: sessionObj }));
+    setTimeout(closeModal, 500);
+  });
+
+  /* ===== Registro ===== */
   fReg?.addEventListener('submit', async (e) => {
     e.preventDefault();
     cleanMsgs();
@@ -143,111 +169,82 @@
     users.push({ name, email, pass: hash, createdAt: Date.now() });
     saveUsers(users);
 
-    saveSession({ name, email, ts: Date.now() }, true);
+    const sessionObj = { name, email, ts: Date.now() };
+    saveSession(sessionObj, true); // recuerda por defecto al crear cuenta
     setMsg(msgReg, '¡Cuenta creada! Conectando…', 'ok');
 
     updateHeaderUI();
+    window.dispatchEvent(new CustomEvent('auth:register', { detail: sessionObj }));
+    window.dispatchEvent(new CustomEvent('auth:login',    { detail: sessionObj }));
     setTimeout(closeModal, 700);
   });
 
-  /* Login */
-  fLogin?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    cleanMsgs();
+  /* ===== Mini menú de usuario en header ===== */
+  function updateHeaderUI() {
+    const s = getSession();
+    const loginBtn = document.getElementById('btnLogin');
+    if (!loginBtn) return;
 
-    const fd = new FormData(fLogin);
-    const email    = (fd.get('email') || '').toString().trim().toLowerCase();
-    const pass     = (fd.get('password') || '').toString();
-    const remember = !!fd.get('remember');
+    if (!s) {
+      const freshBtn = document.getElementById('btnLogin');
+      freshBtn?.addEventListener('click', (e) => { e.preventDefault(); openModal(false); });
+      return;
+    }
 
-    if (!isEmail(email) || !pass) return setMsg(msgLogin, 'Revisa correo/contraseña.', 'err');
+    const firstName = (s.name || 'Tu cuenta').trim().split(/\s+/)[0];
+    const initials  = s.name ? s.name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase()||'').join('') : 'RC';
 
-    const users = getUsers();
-    const user  = users.find(u => u.email === email);
-    if (!user)   return setMsg(msgLogin, 'Usuario no encontrado.', 'err');
-
-    const hash = await weakHash(pass);
-    if (user.pass !== hash) return setMsg(msgLogin, 'Contraseña incorrecta.', 'err');
-
-    saveSession({ name: user.name, email: user.email, ts: Date.now() }, remember);
-    setMsg(msgLogin, '¡Bienvenido!', 'ok');
-
-    updateHeaderUI();
-    setTimeout(closeModal, 500);
-  });
-
-
-function updateHeaderUI() {
-  const s = getSession();
-  const loginBtn = document.getElementById('btnLogin');
-  if (!loginBtn) return;
-
-  if (!s) {
-    const freshBtn = document.getElementById('btnLogin');
-    freshBtn?.addEventListener('click', (e) => { e.preventDefault(); openModal(false); });
-    return;
-  }
-
-  const firstName = (s.name || 'Tu cuenta').trim().split(/\s+/)[0];
-  const initials  = s.name ? s.name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase()||'').join('') : 'RC';
-
-  loginBtn.outerHTML = `
-    <div class="auth-mini" id="authMini">
-      <button class="auth-user" id="btnUser" aria-expanded="false" aria-haspopup="menu">
-        <span class="auth-avatar" aria-hidden="true">${initials}</span>
-        <span class="auth-label">${firstName.toLowerCase()}</span>
-        <svg class="auth-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </button>
-
-      <div class="auth-menu" id="miniMenu" role="menu" hidden>
-        <div class="auth-menu__header">
+    loginBtn.outerHTML = `
+      <div class="auth-mini" id="authMini">
+        <button class="auth-user" id="btnUser" aria-expanded="false" aria-haspopup="menu">
           <span class="auth-avatar" aria-hidden="true">${initials}</span>
-          <div class="auth-id">
-            <strong>${s.name || 'Tu cuenta'}</strong>
-            <small>${s.email}</small>
+          <span class="auth-label">${firstName.toLowerCase()}</span>
+          <svg class="auth-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+
+        <div class="auth-menu" id="miniMenu" role="menu" hidden>
+          <div class="auth-menu__header">
+            <span class="auth-avatar" aria-hidden="true">${initials}</span>
+            <div class="auth-id">
+              <strong>${s.name || 'Tu cuenta'}</strong>
+              <small>${s.email}</small>
+            </div>
           </div>
+
+          <a href="reservas.html" class="auth-menu__item" role="menuitem">Mis reservas</a>
+          <button class="auth-menu__item danger" id="btnLogout" role="menuitem">Cerrar sesión</button>
         </div>
-
-        <!-- Enlaces opcionales -->
-        <a href="reservas.html" class="auth-menu__item" role="menuitem">Mis reservas</a>
-
-        <button class="auth-menu__item danger" id="btnLogout" role="menuitem">Cerrar sesión</button>
       </div>
-    </div>
-  `;
+    `;
 
-  const userBtn = document.getElementById('btnUser');
-  const menu    = document.getElementById('miniMenu');
-  const wrap    = document.getElementById('authMini');
+    const userBtn = document.getElementById('btnUser');
+    const menu    = document.getElementById('miniMenu');
 
-  const showMenu = (show) => {
-    const willShow = typeof show === 'boolean' ? show : menu.hidden;
-    menu.hidden = !willShow;
-    userBtn.setAttribute('aria-expanded', String(willShow));
-  };
+    const showMenu = (show) => {
+      const willShow = typeof show === 'boolean' ? show : menu.hidden;
+      menu.hidden = !willShow;
+      userBtn.setAttribute('aria-expanded', String(willShow));
+    };
 
-  userBtn?.addEventListener('click', (e) => { e.stopPropagation(); showMenu(menu.hidden); });
+    userBtn?.addEventListener('click', (e) => { e.stopPropagation(); showMenu(menu.hidden); });
+    document.addEventListener('click', (ev) => { if (!ev.target.closest('#authMini') && !menu.hidden) showMenu(false); });
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') showMenu(false); });
 
-  document.addEventListener('click', (ev) => {
-    if (!ev.target.closest('#authMini') && !menu.hidden) showMenu(false);
-  });
-  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') showMenu(false); });
-
-  document.getElementById('btnLogout')?.addEventListener('click', () => {
-    clearSession();
-    location.reload();
-  });
-}
-
+    document.getElementById('btnLogout')?.addEventListener('click', () => {
+      clearSession();
+      window.dispatchEvent(new Event('auth:logout'));
+      location.reload();
+    });
+  }
 
   /* ===== Password Strength Widget (integrado en REGISTRO) ===== */
   function initPwWidget() {
     const widget    = $('#pwWidget');
     const passInput = $('#luxeRegister input[name="password"]');
-    if (!widget || !passInput) return; // si no existe, no hacemos nada
+    if (!widget || !passInput) return;
 
     const fill  = $('#pwFill');
     const label = $('#pwLabel');
@@ -255,7 +252,6 @@ function updateHeaderUI() {
     const tips  = widget.querySelectorAll('.pw-tips li');
     const lock  = widget.querySelector('.pw-lock');
 
-    // Circunferencia (r=18 en el SVG)
     const circ = 2 * Math.PI * 18;
     if (ring) {
       ring.style.strokeDasharray = String(circ);
@@ -324,11 +320,29 @@ function updateHeaderUI() {
     $('#goRegister')?.addEventListener('click', () => setTimeout(() => passInput.focus(), 220));
   }
 
-  /* Eventos públicos opcionales */
+  function requireAuth(onOk) {
+    const s = getSession();
+    if (s) { onOk?.(s); return; }
+    openModal(false);
+    const once = (ev) => { onOk?.(ev.detail || getSession()); };
+    window.addEventListener('auth:login', once, { once: true });
+  }
+
+  window.ErcAuth = {
+    getSession,
+    clearSession,
+    saveSession,
+    requireAuth, 
+    onLogin:   (cb) => window.addEventListener('auth:login', cb),
+    onLogout:  (cb) => window.addEventListener('auth:logout', cb),
+    onRegister:(cb) => window.addEventListener('auth:register', cb),
+    openLogin: () => openModal(false),
+    openRegister: () => openModal(true),
+  };
+
   window.addEventListener('open-auth',     () => openModal(false));
   window.addEventListener('open-register', () => openModal(true));
 
-  /* Auto init */
   document.addEventListener('DOMContentLoaded', () => {
     updateHeaderUI();
     initPwWidget();

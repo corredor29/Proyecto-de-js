@@ -1,98 +1,124 @@
-// /js/hotel.js
+// /js/hotel.js  — Carrusel de HABITACIONES (compat con #roomsTrack y #hotelsTrack)
 (() => {
-  const track = document.getElementById('hotelsTrack');
+  // Soporta ambos IDs para no romper tu HTML actual
+  const track =
+    document.getElementById("roomsTrack") ||
+    document.getElementById("hotelsTrack");
   if (!track) return;
 
-  const hotels = [
+  // ===== DATA: Habitaciones del hotel El Rincón del Carmen =====
+  const rooms = [
     {
-      id: "h1",
-      name: "Ocean Paradise Resort",
-      city: "Punta Cana",
-      rating: 8.4,
+      id: "r1",
+      name: "Suite Vista al Mar",
+      type: "Suite",
+      capacity: 2,          // huéspedes
+      rating: 9.2,
       stars: 5,
-      image: "/image/hotels/ocean-paradise.jpg",
-      features: { beds: 2, wifi: true, minibar: true, hotTub: false },
-      priceNow: 1066470, priceOld: 2132940, discount: 50,
+      image: "/image/habitacion1.jpg",
+      features: { beds: 1, wifi: true, minibar: true, hotTub: true, balcony: true, ac: true, breakfast: true },
+      sizeM2: 48,
+      view: "Mar",
+      priceNow: 612000, priceOld: 1020000, discount: 40,
       refDate: "25 octubre 2025"
     },
     {
-      id: "h2",
-      name: "Grand Oasis Cancún All Inclusive",
-      city: "Cancún",
-      rating: 6.1,
+      id: "r2",
+      name: "Junior Suite Jardín",
+      type: "Junior Suite",
+      capacity: 3,
+      rating: 8.6,
       stars: 4,
-      image: "/image/hotels/grand-oasis.jpg",
-      features: { beds: 2, wifi: true, minibar: true, hotTub: true },
-      priceNow: 769691, priceOld: 2333397, discount: 67,
+      image: "/image/habitacion2.jpg",
+      features: { beds: 2, wifi: true, minibar: true, hotTub: false, balcony: true, ac: true, breakfast: true },
+      sizeM2: 40,
+      view: "Jardín",
+      priceNow: 429000, priceOld: 858000, discount: 50,
       refDate: "8 octubre 2025"
     },
     {
-      id: "h3",
-      name: "Caribbean Pyramid Hotel",
-      city: "Cancún",
-      rating: 7.1,
+      id: "r3",
+      name: "Deluxe King",
+      type: "Deluxe",
+      capacity: 2,
+      rating: 8.9,
       stars: 4,
-      image: "/image/hotels/pyramid.jpg",
-      features: { beds: 1, wifi: true, minibar: false, hotTub: false },
-      priceNow: 992024, priceOld: 2681146, discount: 63,
+      image: "/image/habitacion3.jpg",
+      features: { beds: 1, wifi: true, minibar: true, hotTub: false, balcony: false, ac: true, breakfast: false },
+      sizeM2: 32,
+      view: "Ciudad",
+      priceNow: 355000, priceOld: 718000, discount: 51,
       refDate: "20 diciembre 2025"
     },
     {
-      id: "h4",
-      name: "Sun Bay Beach",
-      city: "Cancún",
-      rating: 7.0,
-      stars: 4,
-      image: "/image/hotels/sun-bay.jpg",
-      features: { beds: 2, wifi: true, minibar: true, hotTub: false },
-      priceNow: 886133, priceOld: 2685251, discount: 67,
+      id: "r4",
+      name: "Doble Estándar",
+      type: "Estándar",
+      capacity: 4,
+      rating: 8.1,
+      stars: 3,
+      image: "/image/habitacion4.jpg",
+      features: { beds: 2, wifi: true, minibar: false, hotTub: false, balcony: false, ac: true, breakfast: false },
+      sizeM2: 28,
+      view: "Patio",
+      priceNow: 299000, priceOld: 598000, discount: 50,
       refDate: "17 octubre 2025"
     }
   ];
 
   /* ===== Helpers ===== */
-  const formatCOP = n =>
-    new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 }).format(n);
+  const formatCOP = (n) =>
+    new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      maximumFractionDigits: 0,
+    }).format(n);
 
-  const starsHTML = n => "★".repeat(n) + "☆".repeat(5 - n);
+  const starsHTML = (n) => "★".repeat(n) + "☆".repeat(5 - n);
 
-  const nextBtn = track.querySelector('.track-arrow.next');
-  const prevBtn = track.querySelector('.track-arrow.prev');
+  const nextBtn = track.querySelector(".track-arrow.next");
+  const prevBtn = track.querySelector(".track-arrow.prev");
 
   /* ===== Render ===== */
-  const makeCard = (h) => {
-    const f = h.features || {};
+  const makeCard = (r) => {
+    const f = r.features || {};
+    // Texto pluralizado
+    const bedsTxt = `${f.beds || 1} ${f.beds === 1 ? "cama" : "camas"}`;
+    const paxTxt = `${r.capacity} ${r.capacity === 1 ? "huésped" : "huéspedes"}`;
     return `
-      <article class="hotel-card" data-id="${h.id}">
+      <article class="hotel-card room-card" data-id="${r.id}">
         <div class="hotel-media">
-          <img src="${h.image}" alt="${h.name}" loading="lazy">
-          <span class="hotel-chip chip-score">${h.rating.toFixed(1)}</span>
-          <span class="hotel-chip chip-city">${h.city}</span>
-          <span class="hotel-chip chip-stars">${starsHTML(h.stars)}</span>
+          <img src="${r.image}" alt="${r.name}" loading="lazy">
+          <span class="hotel-chip chip-score" title="Calificación">${r.rating.toFixed(1)}</span>
+          <span class="hotel-chip chip-stars" title="Categoría">${starsHTML(r.stars)}</span>
+          <span class="hotel-chip chip-view" title="Vista">${r.view}</span>
         </div>
 
         <div class="hotel-body">
-          <h3 class="hotel-title">${h.name}</h3>
-          <p class="hotel-sub">1 noche, 2 personas</p>
+          <h3 class="hotel-title">${r.name}</h3>
+          <p class="hotel-sub">${r.type} · ${paxTxt} · ${r.sizeM2} m²</p>
 
           <div class="hotel-features">
-            <span class="feature"><i class="fi fi-bed"></i>${f.beds || 1} camas</span>
+            <span class="feature"><i class="fi fi-bed"></i>${bedsTxt}</span>
             ${f.wifi ? `<span class="feature"><i class="fi fi-wifi"></i>Wi-Fi</span>` : ""}
             ${f.minibar ? `<span class="feature"><i class="fi fi-mini"></i>Minibar</span>` : ""}
             ${f.hotTub ? `<span class="feature"><i class="fi fi-hot-tub"></i>Jacuzzi</span>` : ""}
+            ${f.balcony ? `<span class="feature"><i class="fi fi-balcony"></i>Balcón</span>` : ""}
+            ${f.ac ? `<span class="feature"><i class="fi fi-ac"></i>A/A</span>` : ""}
+            ${f.breakfast ? `<span class="feature"><i class="fi fi-breakfast"></i>Desayuno</span>` : ""}
           </div>
 
           <div class="price-block">
             <div>
-              <div class="price-now">${formatCOP(h.priceNow)}</div>
-              <div class="price-old">${formatCOP(h.priceOld)}</div>
+              <div class="price-now">${formatCOP(r.priceNow)}</div>
+              <div class="price-old">${formatCOP(r.priceOld)}</div>
             </div>
-            <div class="discount-badge">-${h.discount}%</div>
+            <div class="discount-badge">-${r.discount}%</div>
           </div>
 
           <div class="card-actions">
-            <div class="ref-date">Fecha de referencia: ${h.refDate}</div>
-            <button class="btn-card" data-book="${h.id}">Reservar</button>
+            <div class="ref-date">Fecha de referencia: ${r.refDate}</div>
+            <button class="btn-card" data-book="${r.id}">Reservar</button>
           </div>
         </div>
       </article>`;
@@ -100,37 +126,37 @@
 
   const frag = document.createDocumentFragment();
   const insertBeforeNode = nextBtn || null;
-  hotels.forEach(h => {
-    const wrap = document.createElement('div');
-    wrap.innerHTML = makeCard(h);
+  rooms.forEach((r) => {
+    const wrap = document.createElement("div");
+    wrap.innerHTML = makeCard(r);
     frag.appendChild(wrap.firstElementChild);
   });
   track.insertBefore(frag, insertBeforeNode);
 
   /* ===== Arrows / Navegación ===== */
   const getStep = () => {
-    const card = track.querySelector('.hotel-card');
+    const card = track.querySelector(".hotel-card");
     if (!card) return 320;
     const gap = 16;
     return Math.round(card.getBoundingClientRect().width + gap);
-  };
+    };
 
   const updateArrows = () => {
     const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
     const x = Math.round(track.scrollLeft);
-    prevBtn?.classList.toggle('is-disabled', x <= 2);
-    nextBtn?.classList.toggle('is-disabled', x >= maxScroll - 2);
+    prevBtn?.classList.toggle("is-disabled", x <= 2);
+    nextBtn?.classList.toggle("is-disabled", x >= maxScroll - 2);
   };
 
-  prevBtn?.addEventListener('click', () => {
-    track.scrollBy({ left: -getStep(), behavior: 'smooth' });
+  prevBtn?.addEventListener("click", () => {
+    track.scrollBy({ left: -getStep(), behavior: "smooth" });
   });
-  nextBtn?.addEventListener('click', () => {
-    track.scrollBy({ left:  getStep(), behavior: 'smooth' });
+  nextBtn?.addEventListener("click", () => {
+    track.scrollBy({ left: getStep(), behavior: "smooth" });
   });
 
-  track.addEventListener('scroll', updateArrows);
-  window.addEventListener('resize', updateArrows);
+  track.addEventListener("scroll", updateArrows);
+  window.addEventListener("resize", updateArrows);
   updateArrows();
 
   /* ===== Arrastre con inercia ===== */
@@ -144,7 +170,7 @@
   let rafMomentum = 0;
 
   const now = () => performance.now();
-  const getX = (ev) => ('touches' in ev) ? ev.touches[0].clientX : ev.clientX;
+  const getX = (ev) => ("touches" in ev ? ev.touches[0].clientX : ev.clientX);
 
   const onDown = (ev) => {
     dragging = true;
@@ -154,8 +180,11 @@
     startLeft = track.scrollLeft;
     lastX = startX;
     lastT = now();
-    track.classList.add('is-dragging');
-    if (rafMomentum) { cancelAnimationFrame(rafMomentum); rafMomentum = 0; }
+    track.classList.add("is-dragging");
+    if (rafMomentum) {
+      cancelAnimationFrame(rafMomentum);
+      rafMomentum = 0;
+    }
   };
 
   const onMove = (ev) => {
@@ -171,13 +200,12 @@
     lastX = x;
     lastT = t;
 
-    if (Math.abs(dx) > 4) cancelClick = true; // bloqueo de click fantasma
+    if (Math.abs(dx) > 4) cancelClick = true;
   };
 
   const momentum = () => {
-    // desaceleración exponencial simple
-    const friction = 0.95;  // 0..1
-    const minV = 0.02;      // px/ms
+    const friction = 0.95; // 0..1
+    const minV = 0.02;     // px/ms
     const step = () => {
       velocity *= friction;
       if (Math.abs(velocity) < minV) {
@@ -185,7 +213,7 @@
         updateArrows();
         return;
       }
-      track.scrollLeft -= velocity * 16; // 16ms aprox por frame
+      track.scrollLeft -= velocity * 16; // ~16ms/frame
       rafMomentum = requestAnimationFrame(step);
     };
     rafMomentum = requestAnimationFrame(step);
@@ -194,41 +222,50 @@
   const onUp = () => {
     if (!dragging) return;
     dragging = false;
-    track.classList.remove('is-dragging');
+    track.classList.remove("is-dragging");
     if (Math.abs(velocity) > 0.04) momentum();
     updateArrows();
-    setTimeout(() => { cancelClick = false; }, 0);
+    setTimeout(() => {
+      cancelClick = false;
+    }, 0);
   };
 
   // Mouse
-  track.addEventListener('mousedown', onDown);
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
+  track.addEventListener("mousedown", onDown);
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
   // Touch
-  track.addEventListener('touchstart', onDown, { passive: true });
-  track.addEventListener('touchmove', onMove, { passive: true });
-  track.addEventListener('touchend', onUp);
+  track.addEventListener("touchstart", onDown, { passive: true });
+  track.addEventListener("touchmove", onMove, { passive: true });
+  track.addEventListener("touchend", onUp);
 
   // Evita “click” accidental tras arrastrar
-  track.addEventListener('click', (e) => {
-    if (cancelClick) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  }, true);
+  track.addEventListener(
+    "click",
+    (e) => {
+      if (cancelClick) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    },
+    true
+  );
 
   /* ===== Accesibilidad: teclado ===== */
-  track.setAttribute('tabindex', '0');
-  track.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight') nextBtn?.click();
-    if (e.key === 'ArrowLeft')  prevBtn?.click();
+  track.setAttribute("tabindex", "0");
+  track.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") nextBtn?.click();
+    if (e.key === "ArrowLeft") prevBtn?.click();
   });
 
   /* ===== CTA Reservar (demo) ===== */
-  track.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-book]');
+  track.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-book]");
     if (!btn) return;
-    const id = btn.getAttribute('data-book');
-    const hotel = hotels.find(h => h.id === id);
+    const id = btn.getAttribute("data-book");
+    const room = rooms.find((r) => r.id === id);
+    if (!room) return;
+    // Aquí puedes abrir tu drawer/modal real:
+    alert(`Reservar: ${room.name} — ${formatCOP(room.priceNow)} / noche`);
   });
 })();

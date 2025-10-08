@@ -343,3 +343,125 @@ body{ font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, s
 @media (prefers-reduced-motion: reduce){
   *{ animation: none !important; transition: none !important; }
 }
+.grid-rooms { display:grid; gap:1rem; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); }
+.room-card { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+.room-card img { width:100%; height:180px; object-fit:cover; }
+.room-body { padding:1rem; display:flex; flex-direction:column; gap:.35rem; }
+.room-body .btn-reservar { margin-top:.5rem; padding:.6rem 1rem; border:none; border-radius:8px; background:#0a5; color:#fff; cursor:pointer; }
+.modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; }
+.modal-content{ background:#fff; padding:1rem; width:min(420px,92vw); border-radius:12px; position:relative; }
+.close{ position:absolute; right:.75rem; top:.5rem; cursor:pointer; font-size:1.4rem; }
+.msg{ margin-top:.4rem; font-size:.9rem; }
+.warn{ color:#b45309; }
+
+.res-card::before,
+.res-media::after {
+  pointer-events: none;
+}
+
+/* Asegura que el botón esté por encima */
+.res-price { position: relative; }
+.res-cta { position: relative; z-index: 2; pointer-events: auto; }
+
+/* ===== MODAL ELEGANTE CENTRADO ===== */
+.res-overlay{ 
+  display:grid; place-items:center; 
+  align-items:center; justify-items:center; 
+  padding: 10vh 1rem; 
+  backdrop-filter: blur(4px);
+}
+
+.res-drawer{
+  width:min(720px, 96vw);
+  max-height: 86vh;
+  border-radius: 18px;
+  overflow: hidden;                     /* recorta contenido sobrante */
+  background: linear-gradient(180deg,#fff, #faf9f7);
+  border: 1px solid #efe7de;
+  box-shadow: 0 30px 90px rgba(0,0,0,.30);
+}
+
+.res-drawer__head{
+  position: sticky; top:0; z-index:2;
+  background: linear-gradient(180deg,#ffffff, #fcfbf9);
+  border-bottom: 1px solid #f0e8df;
+}
+
+.res-drawer__body{
+  padding: 1rem 1.2rem 1.2rem;
+  overflow: auto;                       /* scroll interno si se llena */
+  max-height: calc(86vh - 132px);       /* resto de header+footer */
+}
+
+/* Layout del contenido */
+.resv-room{
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: .8rem;
+}
+@media (max-width:560px){
+  .resv-room{ grid-template-columns: 1fr; }
+}
+
+.resv-img{
+  width: 140px; height: 104px; object-fit: cover; border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.12);
+}
+.resv-info h4{
+  margin:0 0 .2rem; font-weight:900; color:#111827; font-size: 1.1rem;
+}
+.resv-info p{
+  margin:.1rem 0 .4rem; color:#6b7280; font-weight:600;
+}
+.resv-feat{
+  display:flex; flex-wrap:wrap; gap:.35rem .55rem; padding-left:0; margin:0;
+  list-style:none; color:#374151; font-weight:700; font-size:.9rem;
+}
+
+/* Tarjeta de “recibo” */
+.resv-summary{
+  margin-top:.6rem;
+  border:1px solid #efe6dd;
+  background: linear-gradient(180deg,#fff,#fdfbf8);
+  border-radius: 14px;
+  padding: .8rem;
+  display:grid; grid-template-columns: 1fr 1fr; gap:.5rem .75rem;
+}
+.resv-summary > div{ display:flex; align-items:baseline; gap:.35rem; }
+.resv-summary span{ color:#6b7280; font-weight:700; font-size:.92rem; }
+.resv-summary strong{ color:#111827; font-weight:900; }
+
+.resv-summary .total{
+  grid-column: 1 / -1;
+  display:flex; justify-content:space-between; align-items:center;
+  margin-top:.2rem; padding-top:.5rem;
+  border-top:1px dashed #e8e1d9;
+}
+.resv-total{
+  font-size: 1.25rem; font-weight: 900; color:#111827;
+}
+
+/* Footer fijo y botones premium */
+.res-drawer__foot{
+  position: sticky; bottom:0; z-index:2;
+  background: linear-gradient(180deg,#fcfbf9,#fff);
+  border-top: 1px solid #efe6de;
+}
+.luxe-btn{ border-radius: 12px; padding:.8rem 1.1rem; font-weight:900; }
+.luxe-btn--primary{
+  background: linear-gradient(135deg, var(--brand-gold,#C8A97E), #a6855f);
+  color:#111; border-color: transparent;
+  box-shadow: 0 16px 36px rgba(200,169,126,.35);
+}
+
+.res-card::before, .res-media::after{ pointer-events:none; } /* no bloquear clicks */
+
+.toast{
+  position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%);
+  background:#101828; color:#fff; padding:.75rem 1rem; border-radius: 12px;
+  box-shadow: 0 18px 44px rgba(0,0,0,.28);
+  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+}
+.toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); }
