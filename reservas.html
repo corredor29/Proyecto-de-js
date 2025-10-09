@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reservas | El Rincón del Carmen</title>
 
-  <link rel="stylesheet" href="/css/reservas.css" />
+  <!-- IMPORTANTE: primero style.css y luego reservas.css para que este último tenga prioridad -->
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/reservas.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800;900&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 
   <!-- Scripts (cargar en este orden) -->
@@ -15,8 +16,8 @@
   <script src="/js/reservas.js" defer></script>
 </head>
 <body>
-  <!-- Header -->
-  <header class="site-header">
+  <!-- Header (flotando sobre el hero para permitir 100vh del fondo) -->
+  <header class="site-header site-header--over-hero">
     <div class="container">
       <a class="brand" href="index.html">El Rincón del Carmen</a>
       <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
@@ -61,6 +62,11 @@
         <label class="rf-field">
           <span>Fecha de Salida</span>
           <input type="date" id="checkout" required>
+        </label>
+
+        <label class="rf-field">
+          <span>Ciudad</span>
+          <select id="city" required></select>
         </label>
 
         <label class="rf-field">
@@ -112,7 +118,6 @@
 
       <footer class="res-drawer__foot">
         <button class="luxe-btn" id="resCancel">Cancelar</button>
-        <!-- Botón de confirmación en el drawer -->
         <button class="luxe-btn luxe-btn--primary" id="resConfirm">Sí</button>
       </footer>
     </section>
@@ -136,47 +141,47 @@
     </ul>
   </section>
 
-<!-- ===== Modal/Drawer: Editar reserva ===== -->
-<div id="editOverlay" class="res-overlay" hidden>
-  <div class="res-drawer res-drawer--edit" role="dialog" aria-modal="true">
-    <div class="res-drawer__head">
-      <h3>Editar reserva</h3>
-      <button id="editClose" class="res-close" aria-label="Cerrar">×</button>
-    </div>
-
-    <div class="res-drawer__body">
-      <div class="edit-grid">
-        <label class="rf-field">
-          <span>Nueva entrada</span>
-          <input type="date" id="editCheckin">
-        </label>
-
-        <label class="rf-field">
-          <span>Nueva salida</span>
-          <input type="date" id="editCheckout">
-        </label>
-
-        <button id="editSave" class="luxe-btn luxe-btn--primary btn-commit" type="button">
-          <span class="btn-commit__label">Guardar</span>
-        </button>
+  <!-- ===== Modal/Drawer: Editar reserva ===== -->
+  <div id="editOverlay" class="res-overlay" hidden>
+    <div class="res-drawer res-drawer--edit" role="dialog" aria-modal="true">
+      <div class="res-drawer__head">
+        <h3>Editar reserva</h3>
+        <button id="editClose" class="res-close" aria-label="Cerrar">×</button>
       </div>
 
-      <!-- Previsualización dinámica -->
-      <div class="edit-preview" aria-live="polite">
-        <div class="preview-pill">
-          <span class="pp-k">Noches</span>
-          <span class="pp-v" id="editNights">—</span>
-        </div>
-        <div class="preview-pill">
-          <span class="pp-k">Total estimado</span>
-          <span class="pp-v" id="editTotal">—</span>
-        </div>
-      </div>
+      <div class="res-drawer__body">
+        <div class="edit-grid">
+          <label class="rf-field">
+            <span>Nueva entrada</span>
+            <input type="date" id="editCheckin">
+          </label>
 
-      <p class="res-note">Validamos disponibilidad y que no se cruce con otras reservas tuyas.</p>
+          <label class="rf-field">
+            <span>Nueva salida</span>
+            <input type="date" id="editCheckout">
+          </label>
+
+          <button id="editSave" class="luxe-btn luxe-btn--primary btn-commit" type="button">
+            <span class="btn-commit__label">Guardar</span>
+          </button>
+        </div>
+
+        <!-- Previsualización dinámica -->
+        <div class="edit-preview" aria-live="polite">
+          <div class="preview-pill">
+            <span class="pp-k">Noches</span>
+            <span class="pp-v" id="editNights">—</span>
+          </div>
+          <div class="preview-pill">
+            <span class="pp-k">Total estimado</span>
+            <span class="pp-v" id="editTotal">—</span>
+          </div>
+        </div>
+
+        <p class="res-note">Validamos disponibilidad y que no se cruce con otras reservas tuyas.</p>
+      </div>
     </div>
   </div>
-</div>
 
   <!-- ===== AUTH LUXE MODAL ===== -->
   <div class="luxe-auth" id="luxeAuth" aria-hidden="true">

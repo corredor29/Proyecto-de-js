@@ -1,0 +1,203 @@
+/* ===================== Variables y base ===================== */
+:root{
+  --adm-bg:#0e0f12;
+  --adm-panel:#16181d;
+  --adm-line:#2a2e35;
+  --adm-text:#eaeef5;
+  --adm-soft:#a9b1bd;
+  --adm-brand:#1f6;
+  --adm-danger:#ef4444;
+  --adm-warn:#f59e0b;
+  --adm-accent:#2563eb;
+  --radius:14px;
+}
+
+.admin-body{ background:var(--adm-bg); color:var(--adm-text); }
+.site-header--admin{ background:var(--adm-panel); border-bottom:1px solid var(--adm-line); }
+.nav--admin a[data-active="true"]{ color:var(--adm-brand); }
+
+/* ===================== Layout y cabecera ===================== */
+.admin-wrap{ padding:1.2rem 0 2.4rem; }
+
+.admin-head{
+  display:flex; align-items:flex-end; justify-content:space-between; gap:1rem;
+}
+.admin-head h1{
+  font-size:1.8rem; margin:.5rem 0 1rem; letter-spacing:.2px;
+}
+
+/* Pestañas */
+.tabs{ display:flex; gap:.6rem; flex-wrap:wrap; }
+.tab{
+  background:var(--adm-panel); border:1px solid var(--adm-line); color:var(--adm-soft);
+  padding:.55rem .9rem; border-radius:999px; cursor:pointer; user-select:none;
+}
+.tab.is-active{ color:#111; background:var(--adm-brand); border-color:transparent; }
+
+/* Contenido por pestaña */
+.admin-tab{ display:none; margin-top:1rem; }
+.admin-tab.is-active{ display:block; }
+
+/* Barra de filtros/acciones */
+.bar{ display:flex; align-items:center; justify-content:space-between; gap:.8rem; margin:.8rem 0 1rem; }
+.filters{ display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+
+.adm-input,.adm-select{
+  background:var(--adm-panel); border:1px solid var(--adm-line); color:var(--adm-text);
+  padding:.6rem .8rem; border-radius:10px; min-width:240px;
+}
+.adm-input:focus,.adm-select:focus{
+  outline:0; border-color:var(--adm-accent); box-shadow:0 0 0 3px rgba(37,99,235,.2);
+}
+
+.adm-btn{
+  background:var(--adm-panel); border:1px solid var(--adm-line); color:var(--adm-text);
+  padding:.6rem .9rem; border-radius:10px; cursor:pointer;
+}
+.adm-btn:hover{ filter:brightness(1.06); }
+.adm-btn--primary{
+  background:var(--adm-brand); color:#111; border-color:transparent; font-weight:700;
+}
+
+/* ===================== Tabla ===================== */
+.adm-table-wrap{
+  background:var(--adm-panel); border:1px solid var(--adm-line);
+  border-radius:var(--radius); overflow:auto;
+}
+.adm-table{ width:100%; border-collapse:separate; border-spacing:0; }
+.adm-table thead th{
+  text-align:left; font-weight:700; color:var(--adm-soft);
+  padding:.8rem .9rem; border-bottom:1px solid var(--adm-line);
+  position:sticky; top:0; background:var(--adm-panel); z-index:1;
+}
+.adm-table tbody td{
+  padding:.7rem .9rem; border-bottom:1px solid var(--adm-line); vertical-align:middle;
+}
+.adm-table tbody tr:hover{ background:rgba(255,255,255,.03); }
+
+/* Badges y pills */
+.badge{ padding:.25rem .55rem; border-radius:999px; font-size:.8rem; font-weight:700; }
+.badge--city{ background:#111; border:1px solid var(--adm-line); }
+.badge--cap{ background:#0f172a; }
+.pill{ padding:.35rem .6rem; border-radius:999px; font-weight:700; }
+.pill--danger{ background:var(--adm-danger); color:#fff; }
+.pill--ok{ background:var(--adm-brand); color:#111; }
+
+/* Acciones por fila */
+.row-actions{ display:flex; gap:.4rem; }
+.icon-btn{
+  border:1px solid var(--adm-line); background:var(--adm-panel); color:var(--adm-text);
+  padding:.4rem .6rem; border-radius:8px; cursor:pointer;
+}
+.icon-btn:hover{ filter:brightness(1.06); }
+.icon-btn--danger{ border-color:#7f1d1d; background:#1f0d0d; color:#fca5a5; }
+
+/* Mensajes vacíos */
+.adm-empty{
+  padding:1rem; color:var(--adm-soft); text-align:center; font-style:italic;
+}
+
+/* ===================== Overlay / Modal NUEVO ===================== */
+.adm-overlay[hidden]{ display:none; }
+.adm-overlay{
+  position: fixed; inset: 0;
+  z-index: 20000;
+  display: block;
+  opacity: 0;
+  transition: .18s ease;
+  pointer-events: none;
+}
+.adm-overlay.is-open{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Cortina difuminada */
+.adm-backdrop{
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(3px);
+}
+
+/* Panel del modal */
+.adm-sheet{
+  position: relative;
+  width: min(980px, 92vw);
+  margin: 8vh auto;
+  background: var(--adm-panel);
+  color: var(--adm-text);
+  border: 1px solid var(--adm-line);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+/* Barra superior / título / cerrar */
+.adm-bar{
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.1rem; border-bottom: 1px solid var(--adm-line);
+}
+.adm-x{
+  background: transparent; border: none; cursor: pointer;
+  color: var(--adm-soft); font-size: 1.2rem; line-height: 1;
+}
+.adm-x:hover{ color:#fff; }
+
+/* Cuerpo / pie */
+.adm-body{ padding: 1rem 1.1rem; display: grid; gap: .8rem; }
+.adm-foot{
+  display: flex; gap: .6rem; justify-content: flex-end;
+  padding: 1rem 1.1rem; border-top: 1px solid var(--adm-line);
+}
+
+/* Campos rápidos del modal */
+.adm-row{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; }
+@media (max-width: 900px){ .adm-row{ grid-template-columns: 1fr; } }
+
+.adm-field{ display: flex; flex-direction: column; gap: .35rem; }
+.adm-field > span{ color: var(--adm-soft); font-weight: 600; font-size: .9rem; }
+.adm-field input, .adm-field select{
+  background: #0f1115; color: var(--adm-text);
+  border: 1px solid var(--adm-line); border-radius: 10px;
+  padding: .6rem .7rem;
+}
+.adm-field input:focus, .adm-field select:focus{
+  outline: 0; border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(37,99,235,.2);
+}
+
+/* Botones genéricos (usados también en modal) */
+.btn{
+  background: var(--adm-panel); color: var(--adm-text);
+  border: 1px solid var(--adm-line);
+  padding: .6rem .9rem; border-radius: 10px; cursor: pointer;
+}
+.btn:hover{ filter:brightness(1.06); }
+.btn-primary{
+  background: var(--adm-brand); color: #111;
+  border-color: transparent; font-weight: 700;
+}
+.btn-danger{
+  background: #1f0d0d; color: #fca5a5; border-color: #7f1d1d;
+}
+
+/* ===================== Formularios avanzados ===================== */
+.adm-form{ padding:1rem 1.1rem; display:flex; flex-direction:column; gap:.8rem; }
+.adm-form label{ display:flex; flex-direction:column; gap:.35rem; }
+.adm-form input, .adm-form select{
+  background:#0f1115; color:var(--adm-text); border:1px solid var(--adm-line);
+  padding:.6rem .7rem; border-radius:10px;
+}
+
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+.grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:.6rem; }
+.grid4{ display:grid; grid-template-columns:repeat(4, 1fr); gap:.6rem; }
+@media (max-width: 900px){
+  .grid2,.grid3,.grid4{ grid-template-columns:1fr; }
+}
+
+/* Bloque de características (checkboxes / toggles) */
+.feat{
+  border:1px dashed var(--adm-line); border-radius:12px;
+  padding:.7rem; display:flex; flex-wrap:wrap; gap:.8rem;
+}

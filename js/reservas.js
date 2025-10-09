@@ -7,6 +7,7 @@
   const checkin    = document.getElementById("checkin");
   const checkout   = document.getElementById("checkout");
   const guests     = document.getElementById("guests");
+  const citySel    = document.getElementById("city");     
 
   const nightsChip = document.getElementById("rbNights");
   const grid       = document.getElementById("resultsGrid");
@@ -23,19 +24,13 @@
   const btnConfirm = document.getElementById("resConfirm");
   if (btnConfirm) btnConfirm.textContent = "Sí";
 
-  /* === NUEVO: mostrar login por encima del drawer === */
+  /* === Login por encima del drawer === */
   function showLoginOverDrawer(){
-    // subimos el login y “desactivamos” el drawer mientras tanto
     overlay?.classList.add('auth-on-top');
     window.ErcAuth?.openLogin?.();
-
     const cleanup = () => overlay?.classList.remove('auth-on-top');
-
-    // si el usuario inicia/cierra sesión → limpiamos
     window.addEventListener('auth:login',  cleanup, { once:true });
     window.addEventListener('auth:logout', cleanup, { once:true });
-
-    // si el usuario cierra el modal sin loguearse → también limpiamos
     const auth = document.getElementById('luxeAuth');
     if (auth) {
       const closes = auth.querySelectorAll('[data-close], .luxe-auth__overlay');
@@ -43,22 +38,39 @@
     }
   }
 
-  /* ========== DATA DEMO ========== */
-  const rooms = [
-    { id:"r1", name:"Suite Vista al Mar", type:"Suite", capacity:2, stars:5, image:"/image/habitacion1.jpg",
-      features:{ beds:1, wifi:true, minibar:true, hotTub:true, balcony:true, ac:true, breakfast:true },
-      sizeM2:48, view:"Mar", priceNow:612000, priceOld:1020000 },
-    { id:"r2", name:"Junior Suite Jardín", type:"Junior Suite", capacity:3, stars:4, image:"/image/habitacion2.jpg",
-      features:{ beds:2, wifi:true, minibar:true, hotTub:false, balcony:true, ac:true, breakfast:true },
+  /* ========== DATA (Rooms desde LS con semilla) ========== */
+  const LS_ROOMS    = "erc_rooms";             // <<< NUEVO: rooms gestionadas por Admin
+  const LS_BOOKINGS = "erc_reservas";
+
+  // Semilla demo (con ciudades)
+  const ROOMS_SEED = [
+    { id:"r1", city:"Cartagena",   name:"Suite Vista al Mar",  type:"Suite",        capacity:2, stars:5, image:"/image/habitacion1.jpg",
+      features:{ beds:1, wifi:true, minibar:true, hotTub:true,  balcony:true,  ac:true, breakfast:true },
+      sizeM2:48, view:"Mar",   priceNow:612000, priceOld:1020000 },
+    { id:"r2", city:"Medellín",    name:"Junior Suite Jardín", type:"Junior Suite", capacity:3, stars:4, image:"/image/habitacion2.jpg",
+      features:{ beds:2, wifi:true, minibar:true, hotTub:false, balcony:true,  ac:true, breakfast:true },
       sizeM2:40, view:"Jardín", priceNow:429000, priceOld:858000 },
-    { id:"r3", name:"Deluxe King", type:"Deluxe", capacity:2, stars:4, image:"/image/habitacion3.jpg",
+    { id:"r3", city:"Bogotá",      name:"Deluxe King",         type:"Deluxe",       capacity:2, stars:4, image:"/image/habitacion3.jpg",
       features:{ beds:1, wifi:true, minibar:true, hotTub:false, balcony:false, ac:true, breakfast:false },
       sizeM2:32, view:"Ciudad", priceNow:355000, priceOld:718000 },
-    { id:"r4", name:"Doble Estándar", type:"Estándar", capacity:4, stars:3, image:"/image/habitacion4.jpg",
+    { id:"r4", city:"Santa Marta", name:"Doble Estándar",      type:"Estándar",     capacity:4, stars:3, image:"/image/habitacion4.jpg",
       features:{ beds:2, wifi:true, minibar:false, hotTub:false, balcony:false, ac:true, breakfast:false },
-      sizeM2:28, view:"Patio", priceNow:299000, priceOld:598000 }
+      sizeM2:28, view:"Patio",  priceNow:299000, priceOld:598000 }
   ];
-  window.__ERC_ROOMS = rooms;
+
+  const getRooms = () => {
+    try {
+      const raw = localStorage.getItem(LS_ROOMS);
+      const arr = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(arr) && arr.length) return arr;
+      // si no hay rooms en LS, sembramos la demo
+      localStorage.setItem(LS_ROOMS, JSON.stringify(ROOMS_SEED));
+      return ROOMS_SEED;
+    } catch { return ROOMS_SEED; }
+  };
+
+  let rooms = getRooms();            // <<< se mantiene siempre en sync
+  window.__ERC_ROOMS = rooms;        // útil para “Mis reservas” y otros módulos
 
   // Ocupaciones fijas (rangos [start, end), end no incluido)
   const busy = [
@@ -69,8 +81,7 @@
     { roomId:"r4", start:"2025-10-20", end:"2025-10-23" }
   ];
 
-  /* ========== STORAGE ========== */
-  const LS_BOOKINGS = "erc_reservas";
+  /* ========== STORAGE RESERVAS ========== */
   const getBookings   = () => JSON.parse(localStorage.getItem(LS_BOOKINGS) || "[]");
   const saveBookings  = (arr) => localStorage.setItem(LS_BOOKINGS, JSON.stringify(arr));
 
@@ -100,7 +111,6 @@
     return true;
   }
 
-  // ¿el usuario ya tiene una reserva que se cruza con [start, end)?
   function userHasBookingOverlap(email, start, end){
     if (!email) return false;
     return getBookings().some(b =>
@@ -141,6 +151,16 @@
   checkout.addEventListener("change", renderNightsChip);
   renderNightsChip();
 
+  /* ========== POBLAR SELECT DE CIUDADES ========== */
+  function populateCities(){
+    if (!citySel) return;
+    const cities = [...new Set(rooms.map(r => r.city))].sort((a,b)=>a.localeCompare(b,'es'));
+    citySel.innerHTML =
+      `<option value="all" selected>Todas las ciudades</option>` +
+      cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+  populateCities();
+
   /* ========== UI RENDER ========== */
   const makeCard = (r, nights) => {
     const f = r.features || {};
@@ -156,7 +176,7 @@
         </div>
         <div class="res-body">
           <h3 class="res-title">${r.name}</h3>
-          <p class="res-sub">${r.type} · ${paxTxt} · ${r.sizeM2} m² · Vista ${r.view}</p>
+          <p class="res-sub">📍 ${r.city} · ${r.type} · ${paxTxt} · ${r.sizeM2} m² · Vista ${r.view}</p>
           <div class="res-features">
             <span>🛏️ ${bedsTxt}</span>
             ${f.wifi ? `<span>📶 Wi-Fi</span>` : ""}
@@ -184,7 +204,7 @@
     resMsg.textContent = "";
 
     if(!list.length){
-      resMsg.textContent = "No hay disponibilidad para esas fechas. Prueba con otras fechas o reduce el número de personas.";
+      resMsg.textContent = "No hay disponibilidad para esas fechas. Prueba con otras fechas o cambia de ciudad.";
       return;
     }
 
@@ -206,18 +226,27 @@
     const inD  = parseLocal(checkin.value);
     const outD = parseLocal(checkout.value);
     const pax  = parseInt(guests.value || "1", 10);
+    const cty  = citySel?.value || "all";
 
     if(!inD || !outD){ resMsg.textContent = "Selecciona fechas de entrada y salida."; return; }
     const nights = diffDays(inD, outD);
     if(nights <= 0){ resMsg.textContent = "La fecha de salida debe ser posterior a la de entrada."; return; }
 
+    const cityTxt = (cty === "all" ? "todas las ciudades" : cty);
     resTitle.textContent = "Disponibilidad";
-    resSubtitle.textContent = `Del ${toISO(inD)} al ${toISO(outD)} · ${nights} noche${nights>1?"s":""} · ${pax} persona${pax>1?"s":""}`;
+    resSubtitle.textContent = `Del ${toISO(inD)} al ${toISO(outD)} · ${nights} noche${nights>1?"s":""} · ${pax} persona${pax>1?"s":""} · en ${cityTxt}`;
 
-    const avail = rooms.filter(r => r.capacity >= pax && isRoomFree(r.id, inD, outD));
+    const avail = rooms.filter(r =>
+      r.capacity >= pax &&
+      (cty === "all" || r.city === cty) &&
+      isRoomFree(r.id, inD, outD)
+    );
     renderResults(avail, nights);
   }
   form.addEventListener("submit", searchAvailability);
+  citySel?.addEventListener('change', () => {
+    if (checkin.value && checkout.value) searchAvailability();
+  });
 
   /* ========== TOAST ========== */
   function showToast(msg){
@@ -237,7 +266,6 @@
   /* ========== RESERVAR (Drawer) ========== */
   let selected = null;
 
-  // Delegación global (captura) y en el grid
   document.addEventListener("click", (e) => {
     const btn = e.target.closest?.("[data-book]");
     if (!btn) return;
@@ -291,7 +319,7 @@
         <img class="resv-img" src="${room.image}" alt="${room.name}" />
         <div class="resv-info">
           <h4>${room.name}</h4>
-          <p>${room.type} · ${room.capacity} huésped(es) · ${room.sizeM2} m² · Vista ${room.view}</p>
+          <p>📍 ${room.city} · ${room.type} · ${room.capacity} huésped(es) · ${room.sizeM2} m² · Vista ${room.view}</p>
           <ul class="resv-feat">
             <li>🛏 ${room.features.beds || 1} cama(s)</li>
             ${room.features.wifi?'<li>📶 Wi-Fi</li>':''}
@@ -307,6 +335,7 @@
       <div class="resv-summary">
         <div><span>Entrada</span><strong>${checkin.value}</strong></div>
         <div><span>Salida</span><strong>${checkout.value}</strong></div>
+        <div><span>Ciudad</span><strong>${room.city}</strong></div>
         <div><span>Huéspedes</span><strong>${selected.pax}</strong></div>
         <div><span>Noches</span><strong>${selected.nights}</strong></div>
         <div class="total">
@@ -323,7 +352,6 @@
   function closeDrawer(){
     drawer?.classList.remove("is-open");
     setTimeout(()=> overlay.hidden = true, 160);
-    // por si el login quedó encima y se cerró el drawer
     overlay?.classList.remove('auth-on-top');
     selected = null;
   }
@@ -331,18 +359,16 @@
   btnCancel?.addEventListener("click", closeDrawer);
   overlay?.addEventListener("click", (e)=> { if (e.target === overlay) closeDrawer(); });
 
-  // Confirmar → SOLO si hay sesión y NO existe otra reserva solapada del mismo usuario
   btnConfirm?.addEventListener("click", () => {
     if (!selected) return;
 
     const ses = window.ErcAuth?.getSession?.();
     if (!ses) {
       showToast("Debes iniciar sesión para confirmar tu reserva.");
-      showLoginOverDrawer(); // <<< NUEVO: login sobre el drawer
+      showLoginOverDrawer();
       return;
     }
 
-    // ¿Ya tiene reserva que se cruza con estas fechas?
     if (userHasBookingOverlap(ses.email, selected.inD, selected.outD)) {
       resMsg.textContent = "Ya tienes una reserva en ese rango de fechas.";
       showToast("Ya tienes una reserva para esas fechas.");
@@ -350,7 +376,6 @@
       return;
     }
 
-    // Validar disponibilidad por si cambió
     if (!isRoomFree(selected.room.id, selected.inD, selected.outD)) {
       resMsg.textContent = "Lo sentimos, la habitación ya no está disponible en esas fechas.";
       closeDrawer();
@@ -358,9 +383,9 @@
       return;
     }
 
-    // Guardar reserva (con snapshot del cuarto)
-    const snap = (({id,name,type,sizeM2,view,stars,image,features}) =>
-      ({id,name,type,sizeM2,view,stars,image,features}))(selected.room);
+    // Snapshot (incluye ciudad)
+    const snap = (({id, city, name, type, sizeM2, view, stars, image, features}) =>
+      ({id, city, name, type, sizeM2, view, stars, image, features}))(selected.room);
 
     const booking = {
       id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
@@ -389,32 +414,30 @@
     window.dispatchEvent(new Event('booking:changed'));
   });
 
-  // Refrescar resultados cuando cambien reservas
+  // Si el admin edita/crea/elimina habitaciones → refrescar UI
+  window.addEventListener('rooms:changed', () => {
+    rooms = getRooms();
+    window.__ERC_ROOMS = rooms;
+    populateCities();
+    if (checkin.value && checkout.value) searchAvailability();
+  });
+
   window.addEventListener('booking:changed', () => {
     if (checkin.value && checkout.value) searchAvailability();
   });
 
-  // Búsqueda inicial si ya hay fechas
   if(checkin.value && checkout.value) searchAvailability();
 
-  // ==== Exponer utilidades para el bloque "Mis reservas" ====
+  // Exponer utilidades
   window.Resv = {
-    getBookings,
-    saveBookings,
-    toISO,
-    parseLocal,
-    diffDays,
-    overlap,
-    isRoomFree,
-    busy,
-    showToast,
-    rooms
+    getBookings, saveBookings, toISO, parseLocal, diffDays, overlap,
+    isRoomFree, busy, showToast,
+    get rooms(){ return rooms; } // getter en vivo
   };
 })();
 
 /* ================= MIS RESERVAS (solo del usuario) ================= */
 (() => {
-  // Helpers locales (para no depender del primer IIFE)
   const LS_BOOKINGS = 'erc_reservas';
   const getBookings = () => JSON.parse(localStorage.getItem(LS_BOOKINGS) || '[]');
   const saveBookings = arr => localStorage.setItem(LS_BOOKINGS, JSON.stringify(arr));
@@ -428,20 +451,17 @@
   const sec   = document.getElementById('myBookingsSec');
   const list  = document.getElementById('myBookingsList');
 
-  // Modal de edición
   const editOverlay = document.getElementById('editOverlay');
   const editDrawer  = editOverlay?.querySelector('.res-drawer');
   const eIn   = document.getElementById('editCheckin');
   const eOut  = document.getElementById('editCheckout');
   const eSave = document.getElementById('editSave');
   const eClose= document.getElementById('editClose');
-  // Previsualización (si existe en el HTML nuevo)
   const nEl  = document.getElementById('editNights');
   const tEl  = document.getElementById('editTotal');
 
   let editing = null;
 
-  // ==== Render cards con el MISMO markup de disponibilidad ====
   function renderMyBookings(){
     if (!sec || !list) return;
     const ses = window.ErcAuth?.getSession?.();
@@ -463,7 +483,7 @@
     }
 
     list.innerHTML = mine.map(b => {
-      const snap    = b.snapshot || (window.__ERC_ROOMS || []).find(r => r.id === b.roomId) || {};
+      const snap = b.snapshot || (window.__ERC_ROOMS || []).find(r => r.id === b.roomId) || {};
       const f       = snap.features || {};
       const bedsTxt = `${f.beds || 1} ${f.beds === 1 ? 'cama' : 'camas'}`;
       const nights  = diffDays(new Date(b.start), new Date(b.end));
@@ -477,7 +497,7 @@
 
           <div class="res-body">
             <h3 class="res-title">${b.roomName}</h3>
-            <p class="res-sub">${snap.type || ''} · ${b.guests} huésped(es) · ${snap.sizeM2 || '-'} m² · Vista ${snap.view || '-'}</p>
+            <p class="res-sub">📍 ${snap.city || '-'} · ${snap.type || ''} · ${b.guests} huésped(es) · ${snap.sizeM2 || '-'} m² · Vista ${snap.view || '-'}</p>
 
             <div class="res-features">
               <span>📅 ${toISO(new Date(b.start))} → ${toISO(new Date(b.end))} (${nights} noche${nights>1?'s':''})</span>
@@ -507,25 +527,21 @@
     }).join('');
   }
 
-  // === Cancelar (sin alert) ===
+  // Cancelar sin alert
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-cancel]');
     if (!btn) return;
-
     const id = btn.getAttribute('data-cancel');
-
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
-
     const all = getBookings().filter(b => b.id !== id);
     saveBookings(all);
-
     if (window.Resv?.showToast) window.Resv.showToast('Reserva cancelada.');
     renderMyBookings();
     window.dispatchEvent(new Event('booking:changed'));
   });
 
-  // === Abrir edición ===
+  // Abrir edición
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-edit]');
     if (!btn) return;
@@ -553,7 +569,6 @@
   eClose?.addEventListener('click', closeEdit);
   editOverlay?.addEventListener('click', (e) => { if (e.target === editOverlay) closeEdit(); });
 
-  // Previsualización dinámica (noches / total)
   function updateEditPreview(){
     if (!nEl || !tEl || !editing) return;
     const s = parseLocal(eIn.value);
@@ -567,7 +582,6 @@
   eIn?.addEventListener('input', updateEditPreview);
   eOut?.addEventListener('input', updateEditPreview);
 
-  // Disponibilidad de habitación excluyendo esta reserva (incluye busy)
   function isRoomFreeForEdit(roomId, start, end, excludeId){
     for (const b of (window.Resv?.busy || [])){
       if (b.roomId === roomId && overlap(start, end, new Date(b.start), new Date(b.end))) return false;
@@ -577,16 +591,13 @@
     }
     return true;
   }
-  // ¿Se cruza con otra reserva del mismo usuario (cualquier habitación)?
   function userOverlapExcept(email, start, end, excludeId){
     return getBookings().some(b =>
-      b.id !== excludeId &&
-      b.userEmail === email &&
+      b.id !== excludeId && b.userEmail === email &&
       overlap(start, end, new Date(b.start), new Date(b.end))
     );
   }
 
-  // === Guardar edición (con micro-animación) ===
   eSave?.addEventListener('click', () => {
     if (!editing) return;
 
@@ -629,7 +640,6 @@
     }, 650);
   });
 
-  // Hooks para refrescar
   window.addEventListener('auth:login',  renderMyBookings);
   window.addEventListener('auth:logout', renderMyBookings);
   window.addEventListener('booking:changed', renderMyBookings);

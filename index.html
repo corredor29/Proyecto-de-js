@@ -6,12 +6,19 @@
   <title>Hotel El Rincón del Carmen</title>
 
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/habitaciones.css">
 
   <script src="/js/app.js" defer></script>
   <script src="/js/hero-carousel.js" defer></script>
+  <script src="/js/rooms.data.js" defer></script>
+  <script src="/js/booking.js" defer></script>
+
   <script src="/js/hotel.js" defer></script>
+  <script src="/js/habitaciones.js" defer></script>
+
   <script src="/js/galeria.js" defer></script>
   <script src="/js/auth.js?v=3" defer></script>
+
   
 </head>
 <body>
@@ -96,20 +103,60 @@
     <div class="hero-dots" id="heroDots" role="tablist" aria-label="Selector de diapositivas"></div>
   </section>
 
-  <section class="section-hotels">
-    <div class="section-head container">
-      <h2 class="section-title" >Nuestros Hoteles</h2>
-      <p class="section-subtitle">Espacios diseñados para tu comodidad y descanso</p>
-    </div>
+<!-- ===== MODAL HABITACIÓN ===== -->
+<div class="hb-modal" id="hbModal">
+  <div class="hb-modal-backdrop" onclick="closeModal()"></div>
+  <div class="hb-modal-dialog">
+    <button class="hb-modal-close" onclick="closeModal()">×</button>
 
-    <div class="container">
-      <div class="hotels-track" id="hotelsTrack">
-      
-        <button class="track-arrow prev" aria-label="Anterior"><span>‹</span></button>
-        <button class="track-arrow next" aria-label="Siguiente"><span>›</span></button>
+    <!-- Imagen grande + miniaturas -->
+    <div class="hb-gallery">
+      <div class="hb-slide">
+        <img id="hbMainImg" src="image/habitacion1.jpg" alt="Habitación" />
+      </div>
+      <div class="hb-thumbs" id="hbThumbs">
+        <img src="image/habitacion1.jpg" class="active" onclick="setMainImg(this)">
+        <img src="image/habitacion2.jpg" onclick="setMainImg(this)">
+        <img src="image/habitacion3.jpg" onclick="setMainImg(this)">
       </div>
     </div>
-  </section>
+
+    <!-- Información -->
+    <div class="hb-info">
+      <div class="hb-main">
+        <h2 class="hb-name">Suite Superior, 1 habitación</h2>
+        <p class="hb-sub">Vista a la montaña • 150 m² • 3 personas</p>
+
+        <div class="hb-amenities">
+          <div class="hb-am-card"><div class="hb-am-ico i-bed"></div><div class="hb-am-title">1 King Bed</div></div>
+          <div class="hb-am-card"><div class="hb-am-ico i-wifi"></div><div class="hb-am-title">Wi-Fi gratuito</div></div>
+          <div class="hb-am-card"><div class="hb-am-ico i-ac"></div><div class="hb-am-title">Aire acondicionado</div></div>
+          <div class="hb-am-card"><div class="hb-am-ico i-tv"></div><div class="hb-am-title">TV 55” Smart</div></div>
+          <div class="hb-am-card"><div class="hb-am-ico i-bath"></div><div class="hb-am-title">Baño privado</div></div>
+          <div class="hb-am-card"><div class="hb-am-ico i-coffee"></div><div class="hb-am-title">Cafetera</div></div>
+        </div>
+
+        <ul class="hb-list">
+          <li>Ducha tipo lluvia + amenidades premium</li>
+          <li>Balcón con sillas y mesa</li>
+          <li>Caja fuerte y plancha</li>
+          <li>Check-in 3:00 p.m. — Check-out 12:00 m.</li>
+        </ul>
+      </div>
+
+      <aside class="hb-aside">
+        <p class="hb-price"><span class="hb-price-currency">$</span>619.000</p>
+        <p class="hb-policy">Impuestos incluidos · Cancelación gratuita</p>
+        <div class="hb-cta">
+          <button class="hb-btn hb-btn-primary">Reservar ahora</button>
+          <button class="hb-btn hb-btn-ghost" onclick="closeModal()">Cerrar</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+
   <!-- ========= NUESTROS SERVICIOS ========= -->
   <section id="servicios" class="section-services" aria-labelledby="servicesTitle">
     <div class="container">

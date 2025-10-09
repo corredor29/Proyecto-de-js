@@ -44,6 +44,9 @@
     localStorage.removeItem(LS_SESSION);
   };
 
+  /* === Rol (demo): si el email empieza por admin@ -> admin === */
+  const roleFromEmail = (email='') => (/^admin@/i.test(String(email)) ? 'admin' : 'user');
+
   const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
   async function weakHash(str) {
@@ -104,7 +107,7 @@
     setMsg(msgLogin, 'Demo local: para restablecer, edita o borra el usuario en LocalStorage.', 'info');
   });
 
-  /* ===== Header: botón Login -> abre modal (limpia listeners antiguos) ===== */
+  /* ===== Header: botón Login -> abre modal ===== */
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btnLogin');
     if (btn) {
@@ -138,7 +141,10 @@
     const hash = await weakHash(pass);
     if (user.pass !== hash) return setMsg(msgLogin, 'Contraseña incorrecta.', 'err');
 
-    const sessionObj = { name: user.name, email: user.email, ts: Date.now() };
+    // Rol desde usuario guardado o por patrón de email (demo)
+    const role = user.role || roleFromEmail(user.email);
+
+    const sessionObj = { name: user.name, email: user.email, role, ts: Date.now() };
     saveSession(sessionObj, remember);
     setMsg(msgLogin, '¡Bienvenido!', 'ok');
 
@@ -166,10 +172,11 @@
     if (users.some(u => u.email === email))  return setMsg(msgReg, 'Ya existe una cuenta con ese correo.', 'err');
 
     const hash = await weakHash(pass);
-    users.push({ name, email, pass: hash, createdAt: Date.now() });
+    const role = roleFromEmail(email); // demo: admin si empieza por admin@
+    users.push({ name, email, role, pass: hash, createdAt: Date.now() });
     saveUsers(users);
 
-    const sessionObj = { name, email, ts: Date.now() };
+    const sessionObj = { name, email, role, ts: Date.now() };
     saveSession(sessionObj, true); // recuerda por defecto al crear cuenta
     setMsg(msgReg, '¡Cuenta creada! Conectando…', 'ok');
 
@@ -209,11 +216,12 @@
           <div class="auth-menu__header">
             <span class="auth-avatar" aria-hidden="true">${initials}</span>
             <div class="auth-id">
-              <strong>${s.name || 'Tu cuenta'}</strong>
+              <strong>${s.name || 'Tu cuenta'}${s.role==='admin' ? ' · <small style="color:#22c55e">Admin</small>' : ''}</strong>
               <small>${s.email}</small>
             </div>
           </div>
 
+          ${s.role==='admin' ? `<a href="admin.html" class="auth-menu__item" role="menuitem">Admin</a>` : ''}
           <a href="reservas.html" class="auth-menu__item" role="menuitem">Mis reservas</a>
           <button class="auth-menu__item danger" id="btnLogout" role="menuitem">Cerrar sesión</button>
         </div>
@@ -234,13 +242,11 @@
     document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') showMenu(false); });
 
     document.getElementById('btnLogout')?.addEventListener('click', () => {
-      clearSession();
-      window.dispatchEvent(new Event('auth:logout'));
-      location.reload();
+      logout(); // usa la función pública
     });
   }
 
-  /* ===== Password Strength Widget (integrado en REGISTRO) ===== */
+  /* ===== Password Strength Widget ===== */
   function initPwWidget() {
     const widget    = $('#pwWidget');
     const passInput = $('#luxeRegister input[name="password"]');
@@ -328,11 +334,19 @@
     window.addEventListener('auth:login', once, { once: true });
   }
 
+  /* ===== Logout público (para admin.js) ===== */
+  function logout(redirect = 'index.html') {
+    clearSession();
+    window.dispatchEvent(new Event('auth:logout'));
+    if (redirect) location.href = redirect;
+  }
+
   window.ErcAuth = {
     getSession,
     clearSession,
     saveSession,
-    requireAuth, 
+    requireAuth,
+    logout,                    // << nuevo
     onLogin:   (cb) => window.addEventListener('auth:login', cb),
     onLogout:  (cb) => window.addEventListener('auth:logout', cb),
     onRegister:(cb) => window.addEventListener('auth:register', cb),
