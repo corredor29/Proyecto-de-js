@@ -254,6 +254,8 @@ Este proyecto es de uso académico para el programa de desarrollo web.
 
 ## 📧 Contacto
 
+https://hotelrincondelcarmenr.netlify.app
+
 Para más información sobre el proyecto, contactar a través del repositorio de GitHub.
 
 ---
