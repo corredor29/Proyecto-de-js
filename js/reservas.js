@@ -7,7 +7,7 @@
   const checkin    = document.getElementById("checkin");
   const checkout   = document.getElementById("checkout");
   const guests     = document.getElementById("guests");
-  const citySel    = document.getElementById("city");     
+  const citySel    = document.getElementById("city");
 
   const nightsChip = document.getElementById("rbNights");
   const grid       = document.getElementById("resultsGrid");
@@ -38,39 +38,22 @@
     }
   }
 
-  /* ========== DATA (Rooms desde LS con semilla) ========== */
-  const LS_ROOMS    = "erc_rooms";             // <<< NUEVO: rooms gestionadas por Admin
-  const LS_BOOKINGS = "erc_reservas";
-
-  // Semilla demo (con ciudades)
-  const ROOMS_SEED = [
-    { id:"r1", city:"Cartagena",   name:"Suite Vista al Mar",  type:"Suite",        capacity:2, stars:5, image:"/image/habitacion1.jpg",
-      features:{ beds:1, wifi:true, minibar:true, hotTub:true,  balcony:true,  ac:true, breakfast:true },
-      sizeM2:48, view:"Mar",   priceNow:612000, priceOld:1020000 },
+  /* ========== DATA DEMO ========== */
+  // Habitaciones de demo
+  const demoRooms = [
+    { id:"r1", city:"Cartagena",   name:"Suite Vista al Mar", type:"Suite", capacity:2, stars:5, image:"/image/habitacion1.jpg",
+      features:{ beds:1, wifi:true, minibar:true, hotTub:true, balcony:true, ac:true, breakfast:true },
+      sizeM2:48, view:"Mar", priceNow:612000, priceOld:1020000 },
     { id:"r2", city:"Medellín",    name:"Junior Suite Jardín", type:"Junior Suite", capacity:3, stars:4, image:"/image/habitacion2.jpg",
-      features:{ beds:2, wifi:true, minibar:true, hotTub:false, balcony:true,  ac:true, breakfast:true },
+      features:{ beds:2, wifi:true, minibar:true, hotTub:false, balcony:true, ac:true, breakfast:true },
       sizeM2:40, view:"Jardín", priceNow:429000, priceOld:858000 },
-    { id:"r3", city:"Bogotá",      name:"Deluxe King",         type:"Deluxe",       capacity:2, stars:4, image:"/image/habitacion3.jpg",
+    { id:"r3", city:"Bogotá",      name:"Deluxe King", type:"Deluxe", capacity:2, stars:4, image:"/image/habitacion3.jpg",
       features:{ beds:1, wifi:true, minibar:true, hotTub:false, balcony:false, ac:true, breakfast:false },
       sizeM2:32, view:"Ciudad", priceNow:355000, priceOld:718000 },
-    { id:"r4", city:"Santa Marta", name:"Doble Estándar",      type:"Estándar",     capacity:4, stars:3, image:"/image/habitacion4.jpg",
+    { id:"r4", city:"Santa Marta", name:"Doble Estándar", type:"Estándar", capacity:4, stars:3, image:"/image/habitacion4.jpg",
       features:{ beds:2, wifi:true, minibar:false, hotTub:false, balcony:false, ac:true, breakfast:false },
-      sizeM2:28, view:"Patio",  priceNow:299000, priceOld:598000 }
+      sizeM2:28, view:"Patio", priceNow:299000, priceOld:598000 }
   ];
-
-  const getRooms = () => {
-    try {
-      const raw = localStorage.getItem(LS_ROOMS);
-      const arr = raw ? JSON.parse(raw) : null;
-      if (Array.isArray(arr) && arr.length) return arr;
-      // si no hay rooms en LS, sembramos la demo
-      localStorage.setItem(LS_ROOMS, JSON.stringify(ROOMS_SEED));
-      return ROOMS_SEED;
-    } catch { return ROOMS_SEED; }
-  };
-
-  let rooms = getRooms();            // <<< se mantiene siempre en sync
-  window.__ERC_ROOMS = rooms;        // útil para “Mis reservas” y otros módulos
 
   // Ocupaciones fijas (rangos [start, end), end no incluido)
   const busy = [
@@ -81,7 +64,93 @@
     { roomId:"r4", start:"2025-10-20", end:"2025-10-23" }
   ];
 
+  // ======= Habitaciones guardadas desde ADMIN + merge seguro =======
+  const LS_ROOMS = 'erc_rooms';
+  const getLSRooms = () => {
+    try { 
+      const v = JSON.parse(localStorage.getItem(LS_ROOMS) || "[]");
+      return Array.isArray(v) ? v : [];
+    } catch { return []; }
+  };
+
+  // Lista total (demo + LS) filtrando registros inválidos
+  function allRooms(){
+    return [...demoRooms, ...getLSRooms()]
+      .filter(r => r && typeof r === 'object'); // quita null/strings, etc
+  }
+
+  // Exponer por compatibilidad (algunas vistas lo usan como fallback)
+  window.__ERC_ROOMS = allRooms();
+
+  /* ========== PRESELECCIÓN QUE VIENE DESDE HOTEL.JS ========== */
+  function upsertPreselectRoom(pre) {
+    if (!pre || typeof pre !== 'object') return null;
+    const normalized = {
+      id: pre.id || `pre_${Date.now()}`,
+      city: pre.city || '-',   // si no venía ciudad, muestra '-'
+      name: pre.name || 'Habitación',
+      type: pre.type || '',
+      capacity: Number(pre.capacity || 1),
+      stars: Number(pre.stars || 0),
+      image: pre.image || '/image/habitacion1.jpg',
+      features: pre.features || {},
+      sizeM2: Number(pre.sizeM2 || 0),
+      view: pre.view || '',
+      priceNow: Number(pre.priceNow || 0),
+      priceOld: Number(pre.priceOld || pre.priceNow || 0)
+    };
+    const found = allRooms().find(r => r.id === normalized.id);
+    return found || normalized;
+  }
+
+  function handlePreselectIfAny() {
+    const raw = localStorage.getItem('rb_preselect');
+    if (!raw) return;
+
+    let pre = null;
+    try { pre = JSON.parse(raw); } catch { pre = null; }
+    localStorage.removeItem('rb_preselect'); // evitar repetir
+    if (!pre) return;
+
+    const r = upsertPreselectRoom(pre);
+    if (!r) return;
+
+    // Si no hay fechas elegidas, pone hoy y mañana por defecto
+    const today = new Date(); today.setHours(12,0,0,0);
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (!checkin.value)  checkin.value  = toISO(today);
+    if (!checkout.value) checkout.value = toISO(tomorrow);
+
+    // Recalcula chip de noches y min de checkout
+    (function syncMins(){
+      const inD = parseLocal(checkin.value);
+      if (inD) {
+        const minOut = new Date(inD); minOut.setDate(minOut.getDate() + 1);
+        checkout.min = toISO(minOut);
+      }
+      renderNightsChip();
+    })();
+
+    const inD  = parseLocal(checkin.value);
+    const outD = parseLocal(checkout.value);
+    if (!inD || !outD || outD <= inD) return;
+
+    const nights = diffDays(inD, outD);
+    resTitle.textContent = 'Disponibilidad';
+    resSubtitle.textContent = `Del ${toISO(inD)} al ${toISO(outD)} · ${nights} noche${nights>1?"s":""} · ${guests.value || 1} persona${(parseInt(guests.value||"1",10)>1)?"s":""}`;
+
+    // Renderiza SOLO la habitación preseleccionada
+    renderResults([r], nights);
+
+    // Si venimos con hash #preselect, hace scroll suave al grid
+    if (location.hash.includes('preselect')) {
+      setTimeout(() => grid?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    }
+  }
+
   /* ========== STORAGE RESERVAS ========== */
+  const LS_BOOKINGS = "erc_reservas";
   const getBookings   = () => JSON.parse(localStorage.getItem(LS_BOOKINGS) || "[]");
   const saveBookings  = (arr) => localStorage.setItem(LS_BOOKINGS, JSON.stringify(arr));
 
@@ -151,15 +220,25 @@
   checkout.addEventListener("change", renderNightsChip);
   renderNightsChip();
 
-  /* ========== POBLAR SELECT DE CIUDADES ========== */
+  /* ========== POBLAR SELECT DE CIUDADES (seguro) ========== */
   function populateCities(){
     if (!citySel) return;
-    const cities = [...new Set(rooms.map(r => r.city))].sort((a,b)=>a.localeCompare(b,'es'));
+
+    const cityList = allRooms()
+      .map(r => String(r.city ?? '').trim())
+      .filter(Boolean); // quita '', undefined, null
+
+    const cities = [...new Set(cityList)]
+      .sort((a,b)=>a.localeCompare(b,'es'));
+
     citySel.innerHTML =
       `<option value="all" selected>Todas las ciudades</option>` +
       cities.map(c => `<option value="${c}">${c}</option>`).join('');
   }
   populateCities();
+
+  // Procesa preselección si venimos desde el carrusel
+  handlePreselectIfAny();
 
   /* ========== UI RENDER ========== */
   const makeCard = (r, nights) => {
@@ -176,7 +255,7 @@
         </div>
         <div class="res-body">
           <h3 class="res-title">${r.name}</h3>
-          <p class="res-sub">📍 ${r.city} · ${r.type} · ${paxTxt} · ${r.sizeM2} m² · Vista ${r.view}</p>
+          <p class="res-sub">📍 ${r.city || '-'} · ${r.type} · ${paxTxt} · ${r.sizeM2} m² · Vista ${r.view}</p>
           <div class="res-features">
             <span>🛏️ ${bedsTxt}</span>
             ${f.wifi ? `<span>📶 Wi-Fi</span>` : ""}
@@ -236,7 +315,7 @@
     resTitle.textContent = "Disponibilidad";
     resSubtitle.textContent = `Del ${toISO(inD)} al ${toISO(outD)} · ${nights} noche${nights>1?"s":""} · ${pax} persona${pax>1?"s":""} · en ${cityTxt}`;
 
-    const avail = rooms.filter(r =>
+    const avail = allRooms().filter(r =>
       r.capacity >= pax &&
       (cty === "all" || r.city === cty) &&
       isRoomFree(r.id, inD, outD)
@@ -244,7 +323,7 @@
     renderResults(avail, nights);
   }
   form.addEventListener("submit", searchAvailability);
-  citySel?.addEventListener('change', () => {
+  citySel?.addEventListener('change', () => {      // buscar al cambiar ciudad si ya hay fechas
     if (checkin.value && checkout.value) searchAvailability();
   });
 
@@ -298,7 +377,7 @@
   function openDrawerFor(btn){
     const id = btn.getAttribute("data-book");
     const nights = parseInt(btn.getAttribute("data-nights"), 10) || 1;
-    const room = rooms.find(r => r.id === id);
+    const room = allRooms().find(r => r.id === id);
     if(!room || !overlay || !drawer || !bodyDrawer) return;
 
     const inD  = parseLocal(checkin.value);
@@ -321,13 +400,13 @@
           <h4>${room.name}</h4>
           <p>📍 ${room.city} · ${room.type} · ${room.capacity} huésped(es) · ${room.sizeM2} m² · Vista ${room.view}</p>
           <ul class="resv-feat">
-            <li>🛏 ${room.features.beds || 1} cama(s)</li>
-            ${room.features.wifi?'<li>📶 Wi-Fi</li>':''}
-            ${room.features.minibar?'<li>🥤 Minibar</li>':''}
-            ${room.features.hotTub?'<li>🛁 Jacuzzi</li>':''}
-            ${room.features.balcony?'<li>🌿 Balcón</li>':''}
-            ${room.features.ac?'<li>❄️ A/A</li>':''}
-            ${room.features.breakfast?'<li>🍽️ Desayuno</li>':''}
+            <li>🛏 ${room.features?.beds || 1} cama(s)</li>
+            ${room.features?.wifi?'<li>📶 Wi-Fi</li>':''}
+            ${room.features?.minibar?'<li>🥤 Minibar</li>':''}
+            ${room.features?.hotTub?'<li>🛁 Jacuzzi</li>':''}
+            ${room.features?.balcony?'<li>🌿 Balcón</li>':''}
+            ${room.features?.ac?'<li>❄️ A/A</li>':''}
+            ${room.features?.breakfast?'<li>🍽️ Desayuno</li>':''}
           </ul>
         </div>
       </div>
@@ -383,18 +462,19 @@
       return;
     }
 
-    // Snapshot (incluye ciudad)
+    // Snapshot incluye ciudad
+    const r = selected.room;
     const snap = (({id, city, name, type, sizeM2, view, stars, image, features}) =>
-      ({id, city, name, type, sizeM2, view, stars, image, features}))(selected.room);
+      ({id, city, name, type, sizeM2, view, stars, image, features}))(r);
 
     const booking = {
       id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
-      roomId: selected.room.id,
-      roomName: selected.room.name,
+      roomId: r.id,
+      roomName: r.name,
       snapshot: snap,
       userEmail: ses?.email || null,
       userName:  ses?.name  || null,
-      pricePerNight: selected.room.priceNow,
+      pricePerNight: r.priceNow,
       total: selected.total,
       guests: selected.pax,
       start: selected.inD.toISOString(),
@@ -414,25 +494,15 @@
     window.dispatchEvent(new Event('booking:changed'));
   });
 
-  // Si el admin edita/crea/elimina habitaciones → refrescar UI
-  window.addEventListener('rooms:changed', () => {
-    rooms = getRooms();
-    window.__ERC_ROOMS = rooms;
-    populateCities();
-    if (checkin.value && checkout.value) searchAvailability();
-  });
-
   window.addEventListener('booking:changed', () => {
     if (checkin.value && checkout.value) searchAvailability();
   });
 
   if(checkin.value && checkout.value) searchAvailability();
 
-  // Exponer utilidades
   window.Resv = {
     getBookings, saveBookings, toISO, parseLocal, diffDays, overlap,
-    isRoomFree, busy, showToast,
-    get rooms(){ return rooms; } // getter en vivo
+    isRoomFree, busy, showToast, rooms: allRooms()
   };
 })();
 
@@ -447,6 +517,20 @@
   const overlap  = (A,B,C,D) => (A < D) && (C < B);
   const formatCOP = n => new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(n);
   const starsHTML = n => '★'.repeat(n||0) + '☆'.repeat(Math.max(0,5-(n||0)));
+
+  // Acceso a todas las habitaciones (demo + admin/LS) para snapshots faltantes
+  const LS_ROOMS = 'erc_rooms';
+  const getLSRooms = () => {
+    try { 
+      const v = JSON.parse(localStorage.getItem(LS_ROOMS) || "[]");
+      return Array.isArray(v) ? v : [];
+    } catch { return []; }
+  };
+  const allRooms = () => {
+    const demo = (window.__ERC_ROOMS || []).filter(Boolean);
+    const ls   = getLSRooms();
+    return [...demo, ...ls].filter(r => r && typeof r === 'object');
+  };
 
   const sec   = document.getElementById('myBookingsSec');
   const list  = document.getElementById('myBookingsList');
@@ -483,7 +567,7 @@
     }
 
     list.innerHTML = mine.map(b => {
-      const snap = b.snapshot || (window.__ERC_ROOMS || []).find(r => r.id === b.roomId) || {};
+      const snap = b.snapshot || allRooms().find(r => r.id === b.roomId) || {};
       const f       = snap.features || {};
       const bedsTxt = `${f.beds || 1} ${f.beds === 1 ? 'cama' : 'camas'}`;
       const nights  = diffDays(new Date(b.start), new Date(b.end));

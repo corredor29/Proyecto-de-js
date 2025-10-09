@@ -231,3 +231,187 @@
   background: #365c4a;
 }
 
+/* ===== MODAL — ANIMACIONES PRO ===== */
+
+/* Estados del modal */
+.hb-modal{
+  position: fixed; inset: 0; z-index: 1200;
+  display: grid; place-items: center;
+  pointer-events: none; opacity: 0;
+}
+.hb-modal.is-opening,
+.hb-modal.is-open,
+.hb-modal.is-closing{ display:grid; }
+.hb-modal.is-open{ pointer-events:auto; }
+
+/* Backdrop con blur */
+.hb-modal-backdrop{
+  position:absolute; inset:0; background: rgba(12,16,24,.36);
+  backdrop-filter: blur(2px);
+  opacity: 0; transition: opacity .35s ease;
+}
+.hb-modal.is-opening .hb-modal-backdrop,
+.hb-modal.is-open    .hb-modal-backdrop{ opacity: 1; }
+.hb-modal.is-closing .hb-modal-backdrop{ opacity: 0; }
+
+/* Card */
+.hb-modal-dialog{
+  position: relative; width: min(1120px, 96vw);
+  background: #0b0e14; /* visible durante el fade de la imagen */
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,.45);
+  transform: translateY(18px) scale(.965);
+  opacity: 0; will-change: transform, opacity, filter;
+}
+.hb-modal.is-opening .hb-modal-dialog{
+  animation: hbPopIn .42s cubic-bezier(.2,.8,.2,1) forwards;
+}
+.hb-modal.is-closing .hb-modal-dialog{
+  animation: hbPopOut .28s ease forwards;
+}
+
+/* Botón cerrar */
+.hb-modal-close{
+  position:absolute; top: 10px; right: 10px;
+  width: 38px; height: 38px; border-radius: 999px;
+  border: 0; background: rgba(17,24,39,.72); color:#fff; font-size: 20px;
+  display:grid; place-items:center; cursor:pointer;
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+  backdrop-filter: blur(6px);
+  transition: transform .06s ease, filter .2s ease, background .2s;
+  z-index: 5;
+}
+.hb-modal-close:hover{ filter: brightness(1.05); background: rgba(17,24,39,.86); }
+.hb-modal-close:active{ transform: translateY(1px) }
+
+/* Galería grande con Ken Burns sutil */
+.hb-gallery{ position: relative; background:#000; height: min(68vh, 620px); }
+.hb-slide{ position: relative; height: 100%; }
+.hb-slide img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  transform: scale(1.04);
+  animation: hbKenBurns 18s ease-in-out infinite alternate;
+  filter: saturate(1.02) contrast(1.02);
+}
+
+/* Crossfade al cambiar imagen */
+.hb-slide .is-fading-in{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  animation: hbFadeIn .35s ease forwards;
+}
+
+/* Rail de miniaturas “slide in” */
+.hb-thumbs{
+  position:absolute; right: 12px; top:12px; bottom:12px;
+  width: 104px; padding: 8px; border-radius: 14px;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(6px);
+  display: grid; gap: 8px; overflow:auto;
+  transform: translateX(18px); opacity: 0;
+}
+.hb-modal.is-opening .hb-thumbs{ animation: hbThumbsIn .38s .12s ease forwards; }
+.hb-modal.is-closing .hb-thumbs{ opacity:0; transform: translateX(18px); }
+
+.hb-thumbs img{
+  width: 100%; aspect-ratio: 16/11; object-fit: cover; border-radius: 10px;
+  opacity: .7; outline: 2px solid transparent; cursor: pointer;
+  transition: opacity .18s ease, transform .18s ease, outline-color .18s ease;
+}
+.hb-thumbs img:hover{ opacity: .95; transform: translateY(-1px); }
+.hb-thumbs img.active{ opacity: 1; outline-color: #22c55e; }
+
+/* Info */
+.hb-info{
+  display: grid; gap: 14px; grid-template-columns: 1fr 320px;
+  padding: 14px 16px 18px; background: linear-gradient(180deg,#0b0e14,#0b0e14 60%,#0f1420);
+}
+.hb-name{ color:#fff; margin: 0 0 .35rem; font: 800 26px/1.1 "Inter", system-ui; }
+.hb-sub{ color:#cbd5e1; margin:.2rem 0 1rem; }
+
+.hb-list{ color:#e5e7eb; opacity:.95; padding-left: 18px; }
+.hb-list li{ margin:.28rem 0; }
+
+/* Price sheet animada */
+.hb-aside{
+  align-self: end; background: #0f172a; border: 1px solid rgba(255,255,255,.06);
+  border-radius: 16px; padding: 14px; display: grid; gap: 10px;
+  transform: translateY(12px); opacity: 0;
+}
+.hb-modal.is-opening .hb-aside{ animation: hbSheetUp .34s .16s ease-out forwards; }
+.hb-price{ margin:0; color:#fff; font: 900 28px/1 "Inter"; }
+.hb-policy{ color:#cbd5e1; font-size: 13px; margin:0; }
+
+/* Botones */
+.hb-btn{ border:0; border-radius:12px; padding:.8rem 1rem; font-weight:800; cursor:pointer; }
+.hb-btn-primary{ background:#22c55e; color:#0b0e14; }
+.hb-btn-ghost{ background:#111827; color:#e5e7eb; }
+
+/* Keyframes */
+@keyframes hbPopIn{
+  0%{ opacity:0; transform: translateY(22px) scale(.955); filter: blur(4px) saturate(.9); }
+  60%{ transform: translateY(-2px) scale(1.006); filter: blur(0) saturate(1.02); }
+  100%{ opacity:1; transform: none; filter:none; }
+}
+@keyframes hbPopOut{
+  to{ opacity:0; transform: translateY(12px) scale(.985); filter: blur(4px) saturate(.96); }
+}
+@keyframes hbKenBurns{
+  from{ transform: scale(1.04) translate3d(0,0,0); }
+  to  { transform: scale(1.10) translate3d(-1.2%, -1.2%, 0); }
+}
+@keyframes hbThumbsIn{
+  to{ opacity:1; transform:none; }
+}
+@keyframes hbSheetUp{
+  to{ opacity:1; transform:none; }
+}
+@keyframes hbFadeIn{
+  from{ opacity:0 }
+  to  { opacity:1 }
+}
+
+/* Respeto a reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .hb-modal-backdrop,
+  .hb-modal-dialog,
+  .hb-thumbs,
+  .hb-aside,
+  .hb-slide img{ animation: none !important; transition: none !important; }
+  .hb-modal{ opacity:1; }
+  .hb-modal-dialog{ transform:none; opacity:1; }
+  .hb-thumbs{ transform:none; opacity:1; }
+}
+
+/* Flechas del carrusel: mejor centradas y siempre arriba */
+.section-hotels .track-arrow{
+  position: sticky;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  width: 48px; height: 48px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.95);
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 10px 28px rgba(0,0,0,.15);
+  backdrop-filter: blur(4px);
+  transition: transform .12s ease, filter .2s ease, box-shadow .2s ease;
+}
+.section-hotels .track-arrow:hover{
+  filter: brightness(1.03);
+  box-shadow: 0 16px 36px rgba(0,0,0,.18);
+  transform: translateY(-50%) scale(1.03);
+}
+.section-hotels .track-arrow:active{
+  transform: translateY(-50%) scale(.98);
+}
+.section-hotels .track-arrow.is-disabled{
+  opacity: .35; pointer-events: none;
+}
+.section-hotels .track-arrow.prev{ left: 8px; margin-left: -36px; }
+.section-hotels .track-arrow.next{ right: 8px; margin-right: -36px; }
+
+/* Evitar que el arrastre seleccione texto */
+.hotels-track.is-dragging{
+  cursor: grabbing;
+  user-select: none;
+}

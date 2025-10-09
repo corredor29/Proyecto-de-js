@@ -6,19 +6,12 @@
   <title>Hotel El Rincón del Carmen</title>
 
   <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="/css/habitaciones.css">
 
   <script src="/js/app.js" defer></script>
   <script src="/js/hero-carousel.js" defer></script>
-  <script src="/js/rooms.data.js" defer></script>
-  <script src="/js/booking.js" defer></script>
-
   <script src="/js/hotel.js" defer></script>
-  <script src="/js/habitaciones.js" defer></script>
-
   <script src="/js/galeria.js" defer></script>
   <script src="/js/auth.js?v=3" defer></script>
-
   
 </head>
 <body>
@@ -103,60 +96,19 @@
     <div class="hero-dots" id="heroDots" role="tablist" aria-label="Selector de diapositivas"></div>
   </section>
 
-<!-- ===== MODAL HABITACIÓN ===== -->
-<div class="hb-modal" id="hbModal">
-  <div class="hb-modal-backdrop" onclick="closeModal()"></div>
-  <div class="hb-modal-dialog">
-    <button class="hb-modal-close" onclick="closeModal()">×</button>
-
-    <!-- Imagen grande + miniaturas -->
-    <div class="hb-gallery">
-      <div class="hb-slide">
-        <img id="hbMainImg" src="image/habitacion1.jpg" alt="Habitación" />
-      </div>
-      <div class="hb-thumbs" id="hbThumbs">
-        <img src="image/habitacion1.jpg" class="active" onclick="setMainImg(this)">
-        <img src="image/habitacion2.jpg" onclick="setMainImg(this)">
-        <img src="image/habitacion3.jpg" onclick="setMainImg(this)">
-      </div>
+  <section class="section-hotels">
+    <div class="section-head container">
+      <h2 class="section-title" >Nuestros Hoteles</h2>
+      <p class="section-subtitle">Espacios diseñados para tu comodidad y descanso</p>
     </div>
 
-    <!-- Información -->
-    <div class="hb-info">
-      <div class="hb-main">
-        <h2 class="hb-name">Suite Superior, 1 habitación</h2>
-        <p class="hb-sub">Vista a la montaña • 150 m² • 3 personas</p>
+    <div class="container">
+      <div class="hotels-track" id="hotelsTrack">
+      
 
-        <div class="hb-amenities">
-          <div class="hb-am-card"><div class="hb-am-ico i-bed"></div><div class="hb-am-title">1 King Bed</div></div>
-          <div class="hb-am-card"><div class="hb-am-ico i-wifi"></div><div class="hb-am-title">Wi-Fi gratuito</div></div>
-          <div class="hb-am-card"><div class="hb-am-ico i-ac"></div><div class="hb-am-title">Aire acondicionado</div></div>
-          <div class="hb-am-card"><div class="hb-am-ico i-tv"></div><div class="hb-am-title">TV 55” Smart</div></div>
-          <div class="hb-am-card"><div class="hb-am-ico i-bath"></div><div class="hb-am-title">Baño privado</div></div>
-          <div class="hb-am-card"><div class="hb-am-ico i-coffee"></div><div class="hb-am-title">Cafetera</div></div>
-        </div>
-
-        <ul class="hb-list">
-          <li>Ducha tipo lluvia + amenidades premium</li>
-          <li>Balcón con sillas y mesa</li>
-          <li>Caja fuerte y plancha</li>
-          <li>Check-in 3:00 p.m. — Check-out 12:00 m.</li>
-        </ul>
       </div>
-
-      <aside class="hb-aside">
-        <p class="hb-price"><span class="hb-price-currency">$</span>619.000</p>
-        <p class="hb-policy">Impuestos incluidos · Cancelación gratuita</p>
-        <div class="hb-cta">
-          <button class="hb-btn hb-btn-primary">Reservar ahora</button>
-          <button class="hb-btn hb-btn-ghost" onclick="closeModal()">Cerrar</button>
-        </div>
-      </aside>
     </div>
-  </div>
-</div>
-
-
+  </section>
   <!-- ========= NUESTROS SERVICIOS ========= -->
   <section id="servicios" class="section-services" aria-labelledby="servicesTitle">
     <div class="container">
@@ -181,7 +133,6 @@
           <ul class="service-tags">
             <li>Desayuno buffet</li><li>Room service 24/7</li><li>Opciones veganas</li>
           </ul>
-          <a class="service-cta" href="reservas.html#restaurante">Ver carta</a>
         </article>
 
         <!-- Spa -->
@@ -199,7 +150,7 @@
           <ul class="service-tags">
             <li>Sauna</li><li>Zona húmeda</li><li>Terapias holísticas</li>
           </ul>
-          <a class="service-cta" href="reservas.html#spa">Reservar spa</a>
+
         </article>
 
         <!-- Zonas húmedas -->
@@ -217,7 +168,6 @@
           <ul class="service-tags">
             <li>Toallas incluidas</li><li>Pool bar</li>
           </ul>
-          <a class="service-cta" href="reservas.html#piscina">Horarios</a>
         </article>
 
         <!-- Room service -->
@@ -235,7 +185,6 @@
           <ul class="service-tags">
             <li>Desayuno en cama</li><li>Carta nocturna</li>
           </ul>
-          <a class="service-cta" href="reservas.html#roomservice">Solicitar</a>
         </article>
 
         <!-- Eventos -->
@@ -254,7 +203,6 @@
           <ul class="service-tags">
             <li>Hasta 250 pax</li><li>AV profesional</li>
           </ul>
-          <a class="service-cta" href="contacto.html#eventos">Solicitar propuesta</a>
         </article>
 
         <!-- Traslados -->
@@ -274,7 +222,6 @@
           <ul class="service-tags">
             <li>Privado</li><li>Seguro incluido</li>
           </ul>
-          <a class="service-cta" href="contacto.html#traslados">Consultar</a>
         </article>
       </div>
     </div>
@@ -487,6 +434,39 @@
       </div>
     </section>
   </div>
+  <!-- ======= FOOTER ======= -->
+<footer class="luxe-footer">
+  <div class="container footer-grid">
+    <!-- Marca + País -->
+    <div class="footer-brand">
+      <a class="brand-foot" href="index.html" aria-label="Ir al inicio">
+        <span class="logo-foot">RC</span>
+        <strong>El Rincón del Carmen</strong>
+      </a>
+
+      <label class="country-select" aria-label="Seleccionar país">
+        <span class="flag">🇨🇴</span>
+        <select id="countrySelect">
+          <option value="CO" selected>Colombia</option>
+        </select>
+      </label>
+<!-- Columnas (dinámicas) -->
+      <nav class="footer-cols" aria-label="Mapa del sitio">
+        <div class="col">
+          <h4>Páginas</h4>
+          <ul id="footPages" class="foot-list"></ul>
+        </div>
+        <div class="col">
+          <h4>Secciones</h4>
+          <ul id="footSections" class="foot-list"></ul>
+        </div>
+        <div class="col">
+          <h4>Accesos rápidos</h4>
+          <ul id="footQuick" class="foot-list"></ul>
+        </div>
+      </nav>
+
+
 
 
 </body>
