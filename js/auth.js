@@ -30,7 +30,9 @@
 
   const getSession = () => {
     try {
-      return JSON.parse(sessionStorage.getItem(LS_SESSION) || localStorage.getItem(LS_SESSION)) || null;
+      const s = JSON.parse(sessionStorage.getItem(LS_SESSION) || localStorage.getItem(LS_SESSION)) || null;
+      if (s && s.role) s.role = normalizeRole(s.role); // <- normaliza sesiones viejas con "abmin"
+      return s;
     } catch { return null; }
   };
   const saveSession = (obj, remember = false) => {
@@ -44,8 +46,12 @@
     localStorage.removeItem(LS_SESSION);
   };
 
-  /* === Rol (demo): si el email empieza por admin@ -> admin === */
   const roleFromEmail = (email='') => (/^admin@/i.test(String(email)) ? 'admin' : 'user');
+
+  // normaliza "abmin" -> "admin"
+  const normalizeRole = (r) => (String(r || 'user').toLowerCase() === 'abmin'
+    ? 'admin'
+    : String(r || 'user').toLowerCase());
 
   const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -57,6 +63,24 @@
     }
     try { return btoa(unescape(encodeURIComponent(str))); }
     catch { return str; }
+  }
+
+  /* ===== Seeding: crea admin si no existe ===== */
+  async function seedAdmin() {
+    const users = getUsers();
+    const targetEmail = 'admin@hotelrincondelcarmen.com'; // <- en minúsculas
+    const exists = users.some(u => (u.email || '').toLowerCase() === targetEmail);
+    if (!exists) {
+      const pass = await weakHash('Admin123!'); // tu pass elegido
+      users.push({
+        name: 'Admin',
+        email: targetEmail,
+        role: 'admin',
+        pass,
+        createdAt: Date.now()
+      });
+      saveUsers(users);
+    }
   }
 
   /* ===== UI helpers ===== */
@@ -135,14 +159,14 @@
     if (!isEmail(email) || !pass) return setMsg(msgLogin, 'Revisa correo/contraseña.', 'err');
 
     const users = getUsers();
-    const user  = users.find(u => u.email === email);
+    const user  = users.find(u => (u.email || '').toLowerCase() === email);
     if (!user)   return setMsg(msgLogin, 'Usuario no encontrado.', 'err');
 
     const hash = await weakHash(pass);
     if (user.pass !== hash) return setMsg(msgLogin, 'Contraseña incorrecta.', 'err');
 
-    // Rol desde usuario guardado o por patrón de email (demo)
-    const role = user.role || roleFromEmail(user.email);
+    // Rol desde usuario guardado o patrón, normalizado
+    const role = normalizeRole(user.role || roleFromEmail(user.email));
 
     const sessionObj = { name: user.name, email: user.email, role, ts: Date.now() };
     saveSession(sessionObj, remember);
@@ -169,10 +193,10 @@
     if (pass.length < 6)                     return setMsg(msgReg, 'La contraseña debe tener al menos 6 caracteres.', 'err');
 
     const users = getUsers();
-    if (users.some(u => u.email === email))  return setMsg(msgReg, 'Ya existe una cuenta con ese correo.', 'err');
+    if (users.some(u => (u.email || '').toLowerCase() === email))  return setMsg(msgReg, 'Ya existe una cuenta con ese correo.', 'err');
 
     const hash = await weakHash(pass);
-    const role = roleFromEmail(email); // demo: admin si empieza por admin@
+    const role = normalizeRole(roleFromEmail(email)); // demo: admin si empieza por admin@
     users.push({ name, email, role, pass: hash, createdAt: Date.now() });
     saveUsers(users);
 
@@ -334,6 +358,34 @@
     window.addEventListener('auth:login', once, { once: true });
   }
 
+  /* ===== Guard de admin para páginas protegidas ===== */
+  function ensureAdminPage() {
+    const s = getSession();
+    const currRole = normalizeRole(s?.role);
+    if (!s || currRole !== 'admin') {
+      openModal(false);
+      const msg = document.getElementById('luxeLoginMsg');
+      if (msg) {
+        msg.textContent = 'Necesitas iniciar sesión como administrador.';
+        msg.className = 'luxe-msg info';
+      }
+      const once = (ev) => {
+        const sess = ev?.detail || getSession();
+        if (normalizeRole(sess?.role) !== 'admin') {
+          const m = document.getElementById('luxeLoginMsg');
+          if (m) {
+            m.textContent = 'Tu cuenta no es de administrador.';
+            m.className = 'luxe-msg err';
+          }
+          openModal(false);
+        }
+      };
+      window.addEventListener('auth:login', once, { once: true });
+      return false;
+    }
+    return true;
+  }
+
   /* ===== Logout público (para admin.js) ===== */
   function logout(redirect = 'index.html') {
     clearSession();
@@ -346,7 +398,9 @@
     clearSession,
     saveSession,
     requireAuth,
-    logout,                    // << nuevo
+    ensureAdminPage,          // <- expuesto para admin.js
+    logout,
+    normalizeRole,            // <- opcionalmente expuesto
     onLogin:   (cb) => window.addEventListener('auth:login', cb),
     onLogout:  (cb) => window.addEventListener('auth:logout', cb),
     onRegister:(cb) => window.addEventListener('auth:register', cb),
@@ -357,7 +411,10 @@
   window.addEventListener('open-auth',     () => openModal(false));
   window.addEventListener('open-register', () => openModal(true));
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    // 1) Seed de admin ANTES de pintar UI
+    await seedAdmin();
+    // 2) Ahora sí, UI
     updateHeaderUI();
     initPwWidget();
   });
