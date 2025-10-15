@@ -1,132 +1,167 @@
-
-#contenedorQuejas {
-    max-width: 700px;
-    margin: 3rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+/* ===== QUEJAS — LUXE THEME ===== */
+:root {
+    --brand-deep: #254438;
+    --brand-sand: #F3EEE7;
+    --brand-copper: #B86B59;
+    --brand-gold: #C8A97E;
+    --ink-900: #0f172a;
+    --ink-700: #334155;
+    --ink-500: #6b7280;
+    --radius-xl: 20px;
+    --shadow-xl: 0 22px 60px rgba(0, 0, 0, 0.22);
+    --shadow-md: 0 10px 26px rgba(0, 0, 0, 0.14);
   }
   
-  #contenedorQuejas h2,
-  #contenedorQuejas h3 {
+  /* ===== CONTENEDOR PRINCIPAL ===== */
+  #contenedorQuejas {
+    max-width: 720px;
+    margin: 3rem auto;
+    padding: 2rem 2.2rem;
+    background: linear-gradient(180deg, #fff, var(--brand-sand));
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid #e8e1d9;
+  }
+  
+  #contenedorQuejas h2 {
+    font-family: "Playfair Display", serif;
     text-align: center;
+    font-size: 2rem;
+    color: var(--brand-deep);
     margin-bottom: 1.5rem;
-    color: #222;
-    font-weight: 600;
   }
   
   /* ===== FORMULARIO ===== */
   .luxe-form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.1rem;
   }
   
   .luxe-form label {
     display: flex;
     flex-direction: column;
-    font-weight: 500;
-    color: #333;
+    font-weight: 600;
+    color: var(--ink-700);
   }
   
   .luxe-form input,
   .luxe-form select,
   .luxe-form textarea {
-    margin-top: 0.3rem;
-    padding: 0.6rem 0.8rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    margin-top: 0.4rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d7d3cb;
+    border-radius: 14px;
     font-size: 1rem;
-    transition: border 0.2s, box-shadow 0.2s;
+    color: var(--ink-900);
+    background: #fff;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.02),
+                0 6px 14px rgba(16, 24, 40, 0.05);
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
   
   .luxe-form input:focus,
   .luxe-form select:focus,
   .luxe-form textarea:focus {
-    border-color: #0077cc;
-    box-shadow: 0 0 0 3px rgba(0, 119, 204, 0.15);
+    border-color: var(--brand-gold);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--brand-gold) 40%, transparent);
     outline: none;
   }
   
+  /* ===== BOTÓN ENVIAR ===== */
   .luxe-btn {
-    padding: 0.8rem 1rem;
+    padding: 0.9rem 1.2rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 14px;
     cursor: pointer;
-    font-weight: 600;
-    transition: background 0.2s, transform 0.1s;
+    font-weight: 800;
+    font-size: 1rem;
+    transition: transform 0.1s ease, filter 0.2s ease;
   }
   
   .luxe-btn--primary {
-    background-color: #0077cc;
-    color: #fff;
+    background: linear-gradient(135deg, var(--brand-deep), color-mix(in oklab, var(--brand-deep) 75%, #000));
+    color: #eef4f1;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
   }
   
   .luxe-btn--primary:hover {
-    background-color: #005fa3;
-    transform: scale(1.02);
+    filter: brightness(1.07);
+    transform: translateY(-1px);
+  }
+  
+  .luxe-btn--primary:active {
+    transform: translateY(0);
   }
   
   /* ===== LISTA DE QUEJAS ===== */
   #listaQuejas {
-    margin-top: 2rem;
+    margin-top: 2.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
   
   .queja-item {
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background-color: #fafafa;
+    background: #fff;
+    border-radius: 16px;
+    padding: 1rem 1.2rem;
+    border: 1px solid #eee6dd;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   
   .queja-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
   }
   
   .queja-item h4 {
-    margin-bottom: 0.5rem;
-    color: #0077cc;
+    color: var(--brand-copper);
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
   }
   
   .queja-item p {
-    margin: 0.2rem 0;
-    color: #444;
+    color: var(--ink-700);
     font-size: 0.95rem;
+    margin: 0.25rem 0;
   }
   
+  /* ===== BOTÓN ELIMINAR ===== */
   .btn-eliminar {
-    background-color: #e63946;
+    background: linear-gradient(135deg, #b91c1c, #7f1d1d);
     color: #fff;
     border: none;
-    border-radius: 6px;
-    padding: 0.4rem 0.8rem;
-    margin-top: 0.6rem;
+    border-radius: 10px;
+    padding: 0.45rem 0.9rem;
+    font-weight: 700;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.1s;
   }
   
   .btn-eliminar:hover {
-    background-color: #c1272d;
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    transform: translateY(-1px);
   }
   
+  .btn-eliminar:active {
+    transform: translateY(0);
+  }
+  
+  /* ===== RESPONSIVE ===== */
   @media (max-width: 600px) {
     #contenedorQuejas {
       padding: 1.5rem;
     }
-  
     .luxe-form input,
     .luxe-form select,
     .luxe-form textarea {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
-  
     .luxe-btn {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
   }
   
