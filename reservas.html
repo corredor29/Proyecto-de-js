@@ -5,18 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reservas | El Rincón del Carmen</title>
 
-  <!-- IMPORTANTE: primero style.css y luego reservas.css para que este último tenga prioridad -->
   <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="/css/reservas.css" />
+  <link rel="stylesheet" href="/css/reservas.css" /
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800;900&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 
   <!-- Scripts (cargar en este orden) -->
   <script src="/js/app.js" defer></script>
   <script src="/js/auth.js" defer></script>
   <script src="/js/reservas.js" defer></script>
+  <script src="/js/calificaciones.js"></script>
 </head>
 <body>
-  <!-- Header (flotando sobre el hero para permitir 100vh del fondo) -->
   <header class="site-header site-header--over-hero">
     <div class="container">
       <a class="brand" href="index.html">El Rincón del Carmen</a>
@@ -317,37 +316,41 @@
       <div id="myBookingsList" class="res-grid"></div>
     </div>
   </section>
+  <section>
+    <div class="container" id="contenedorQuejas"></div>
+  </section>
+  
     <!-- ======= FOOTER ======= -->
-<footer class="luxe-footer">
-  <div class="container footer-grid">
-    <!-- Marca + País -->
-    <div class="footer-brand">
-      <a class="brand-foot" href="index.html" aria-label="Ir al inicio">
-        <span class="logo-foot">RC</span>
-        <strong>El Rincón del Carmen</strong>
-      </a>
+  <footer class="luxe-footer">
+    <div class="container footer-grid">
+      <!-- Marca + País -->
+      <div class="footer-brand">
+        <a class="brand-foot" href="index.html" aria-label="Ir al inicio">
+          <span class="logo-foot">RC</span>
+          <strong>El Rincón del Carmen</strong>
+        </a>
 
-      <label class="country-select" aria-label="Seleccionar país">
-        <span class="flag">🇨🇴</span>
-        <select id="countrySelect">
-          <option value="CO" selected>Colombia</option>
-        </select>
-      </label>
-<!-- Columnas (dinámicas) -->
-      <nav class="footer-cols" aria-label="Mapa del sitio">
-        <div class="col">
-          <h4>Páginas</h4>
-          <ul id="footPages" class="foot-list"></ul>
-        </div>
-        <div class="col">
-          <h4>Secciones</h4>
-          <ul id="footSections" class="foot-list"></ul>
-        </div>
-        <div class="col">
-          <h4>Accesos rápidos</h4>
-          <ul id="footQuick" class="foot-list"></ul>
-        </div>
-      </nav>
+        <label class="country-select" aria-label="Seleccionar país">
+          <span class="flag">🇨🇴</span>
+          <select id="countrySelect">
+            <option value="CO" selected>Colombia</option>
+          </select>
+        </label>
+  <!-- Columnas (dinámicas) -->
+        <nav class="footer-cols" aria-label="Mapa del sitio">
+          <div class="col">
+            <h4>Páginas</h4>
+            <ul id="footPages" class="foot-list"></ul>
+          </div>
+          <div class="col">
+            <h4>Secciones</h4>
+            <ul id="footSections" class="foot-list"></ul>
+          </div>
+          <div class="col">
+            <h4>Accesos rápidos</h4>
+            <ul id="footQuick" class="foot-list"></ul>
+          </div>
+        </nav>
 
 </body>
 </html>

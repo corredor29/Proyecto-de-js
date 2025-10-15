@@ -1,4 +1,3 @@
-// /js/reservas.js
 (() => {
   /* ========== ELEMENTOS ========== */
   const form = document.getElementById("bookingForm");
