@@ -1,5 +1,4 @@
 (() => {
-  /* ========== ELEMENTOS ========== */
   const form = document.getElementById("bookingForm");
   if (!form) return;
 
@@ -14,7 +13,6 @@
   const resTitle   = document.getElementById("resTitle");
   const resSubtitle= document.getElementById("resSubtitle");
 
-  // Drawer / Modal (confirmación)
   const overlay    = document.getElementById("resOverlay");
   const drawer     = overlay?.querySelector(".res-drawer");
   const bodyDrawer = document.getElementById("resvBody");
@@ -23,7 +21,6 @@
   const btnConfirm = document.getElementById("resConfirm");
   if (btnConfirm) btnConfirm.textContent = "Sí";
 
-  /* === Login por encima del drawer === */
   function showLoginOverDrawer(){
     overlay?.classList.add('auth-on-top');
     window.ErcAuth?.openLogin?.();
@@ -37,8 +34,6 @@
     }
   }
 
-  /* ========== DATA DEMO ========== */
-  // Habitaciones de demo
   const demoRooms = [
     { id:"r1", city:"Cartagena",   name:"Suite Vista al Mar", type:"Suite", capacity:2, stars:5, image:"/image/habitacion1.jpg",
       features:{ beds:1, wifi:true, minibar:true, hotTub:true, balcony:true, ac:true, breakfast:true },
@@ -54,7 +49,6 @@
       sizeM2:28, view:"Patio", priceNow:299000, priceOld:598000 }
   ];
 
-  // Ocupaciones fijas (rangos [start, end), end no incluido)
   const busy = [
     { roomId:"r1", start:"2025-10-07", end:"2025-10-09" },
     { roomId:"r1", start:"2025-12-24", end:"2025-12-27" },
@@ -63,7 +57,6 @@
     { roomId:"r4", start:"2025-10-20", end:"2025-10-23" }
   ];
 
-  // ======= Habitaciones guardadas desde ADMIN + merge seguro =======
   const LS_ROOMS = 'erc_rooms';
   const getLSRooms = () => {
     try { 
@@ -72,13 +65,18 @@
     } catch { return []; }
   };
 
-  // Lista total (demo + LS) filtrando registros inválidos
   function allRooms(){
-    return [...demoRooms, ...getLSRooms()]
-      .filter(r => r && typeof r === 'object'); // quita null/strings, etc
+    const raw = [...demoRooms, ...getLSRooms()];
+    const map = new Map();
+    for (const r of raw) {
+      if (!r || typeof r !== 'object') continue;
+      const id  = String(r.id || '').trim();
+      const key = id || `${String(r.city||'').trim()}|${String(r.name||'').trim()}`;
+      if (!map.has(key)) map.set(key, r);
+    }
+    return [...map.values()];
   }
 
-  // Exponer por compatibilidad (algunas vistas lo usan como fallback)
   window.__ERC_ROOMS = allRooms();
 
   /* ========== PRESELECCIÓN QUE VIENE DESDE HOTEL.JS ========== */
@@ -86,7 +84,7 @@
     if (!pre || typeof pre !== 'object') return null;
     const normalized = {
       id: pre.id || `pre_${Date.now()}`,
-      city: pre.city || '-',   // si no venía ciudad, muestra '-'
+      city: pre.city || '-',
       name: pre.name || 'Habitación',
       type: pre.type || '',
       capacity: Number(pre.capacity || 1),
@@ -108,20 +106,18 @@
 
     let pre = null;
     try { pre = JSON.parse(raw); } catch { pre = null; }
-    localStorage.removeItem('rb_preselect'); // evitar repetir
+    localStorage.removeItem('rb_preselect');
     if (!pre) return;
 
     const r = upsertPreselectRoom(pre);
     if (!r) return;
 
-    // Si no hay fechas elegidas, pone hoy y mañana por defecto
     const today = new Date(); today.setHours(12,0,0,0);
     const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
 
     if (!checkin.value)  checkin.value  = toISO(today);
     if (!checkout.value) checkout.value = toISO(tomorrow);
 
-    // Recalcula chip de noches y min de checkout
     (function syncMins(){
       const inD = parseLocal(checkin.value);
       if (inD) {
@@ -139,10 +135,8 @@
     resTitle.textContent = 'Disponibilidad';
     resSubtitle.textContent = `Del ${toISO(inD)} al ${toISO(outD)} · ${nights} noche${nights>1?"s":""} · ${guests.value || 1} persona${(parseInt(guests.value||"1",10)>1)?"s":""}`;
 
-    // Renderiza SOLO la habitación preseleccionada
     renderResults([r], nights);
 
-    // Si venimos con hash #preselect, hace scroll suave al grid
     if (location.hash.includes('preselect')) {
       setTimeout(() => grid?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
     }
@@ -223,9 +217,9 @@
   function populateCities(){
     if (!citySel) return;
 
-    const cityList = allRooms()
+    const cityList = window.__ERC_ROOMS
       .map(r => String(r.city ?? '').trim())
-      .filter(Boolean); // quita '', undefined, null
+      .filter(Boolean);
 
     const cities = [...new Set(cityList)]
       .sort((a,b)=>a.localeCompare(b,'es'));
@@ -314,7 +308,7 @@
     resTitle.textContent = "Disponibilidad";
     resSubtitle.textContent = `Del ${toISO(inD)} al ${toISO(outD)} · ${nights} noche${nights>1?"s":""} · ${pax} persona${pax>1?"s":""} · en ${cityTxt}`;
 
-    const avail = allRooms().filter(r =>
+    const avail = window.__ERC_ROOMS.filter(r =>
       r.capacity >= pax &&
       (cty === "all" || r.city === cty) &&
       isRoomFree(r.id, inD, outD)
@@ -322,7 +316,7 @@
     renderResults(avail, nights);
   }
   form.addEventListener("submit", searchAvailability);
-  citySel?.addEventListener('change', () => {      // buscar al cambiar ciudad si ya hay fechas
+  citySel?.addEventListener('change', () => {
     if (checkin.value && checkout.value) searchAvailability();
   });
 
@@ -376,7 +370,7 @@
   function openDrawerFor(btn){
     const id = btn.getAttribute("data-book");
     const nights = parseInt(btn.getAttribute("data-nights"), 10) || 1;
-    const room = allRooms().find(r => r.id === id);
+    const room = window.__ERC_ROOMS.find(r => r.id === id);
     if(!room || !overlay || !drawer || !bodyDrawer) return;
 
     const inD  = parseLocal(checkin.value);
@@ -499,13 +493,14 @@
 
   if(checkin.value && checkout.value) searchAvailability();
 
+  // Export utilidades
   window.Resv = {
     getBookings, saveBookings, toISO, parseLocal, diffDays, overlap,
-    isRoomFree, busy, showToast, rooms: allRooms()
+    isRoomFree, busy, showToast, rooms: window.__ERC_ROOMS
   };
 })();
 
-/* ================= MIS RESERVAS (solo del usuario) ================= */
+/* ===================== MIS RESERVAS (solo del usuario) ===================== */
 (() => {
   const LS_BOOKINGS = 'erc_reservas';
   const getBookings = () => JSON.parse(localStorage.getItem(LS_BOOKINGS) || '[]');
@@ -517,18 +512,18 @@
   const formatCOP = n => new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(n);
   const starsHTML = n => '★'.repeat(n||0) + '☆'.repeat(Math.max(0,5-(n||0)));
 
-  // Acceso a todas las habitaciones (demo + admin/LS) para snapshots faltantes
-  const LS_ROOMS = 'erc_rooms';
-  const getLSRooms = () => {
-    try { 
-      const v = JSON.parse(localStorage.getItem(LS_ROOMS) || "[]");
-      return Array.isArray(v) ? v : [];
-    } catch { return []; }
-  };
+  // IMPORTANTE: Usar SOLO la lista unificada expuesta por el primer IIFE
   const allRooms = () => {
-    const demo = (window.__ERC_ROOMS || []).filter(Boolean);
-    const ls   = getLSRooms();
-    return [...demo, ...ls].filter(r => r && typeof r === 'object');
+    const base = Array.isArray(window.__ERC_ROOMS) ? window.__ERC_ROOMS : [];
+    // (defensa extra) garantizar dedup
+    const map = new Map();
+    for (const r of base) {
+      if (!r || typeof r !== 'object') continue;
+      const id  = String(r.id || '').trim();
+      const key = id || `${String(r.city||'').trim()}|${String(r.name||'').trim()}`;
+      if (!map.has(key)) map.set(key, r);
+    }
+    return [...map.values()];
   };
 
   const sec   = document.getElementById('myBookingsSec');
@@ -610,7 +605,7 @@
     }).join('');
   }
 
-  // Cancelar sin alert
+  // Cancelar
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-cancel]');
     if (!btn) return;

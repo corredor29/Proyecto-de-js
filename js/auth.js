@@ -48,7 +48,6 @@
 
   const roleFromEmail = (email='') => (/^admin@/i.test(String(email)) ? 'admin' : 'user');
 
-  // normaliza "abmin" -> "admin"
   const normalizeRole = (r) => (String(r || 'user').toLowerCase() === 'abmin'
     ? 'admin'
     : String(r || 'user').toLowerCase());
@@ -71,7 +70,7 @@
     const targetEmail = 'admin@hotelrincondelcarmen.com'; // <- en minúsculas
     const exists = users.some(u => (u.email || '').toLowerCase() === targetEmail);
     if (!exists) {
-      const pass = await weakHash('Admin123!'); // tu pass elegido
+      const pass = await weakHash('Admin123!'); 
       users.push({
         name: 'Admin',
         email: targetEmail,

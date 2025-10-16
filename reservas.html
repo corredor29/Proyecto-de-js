@@ -7,16 +7,13 @@
 
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/reservas.css" />
-  <link rel="stylesheet" href="/css/quejas.css" /> 
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800;900&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 
-  <!-- Scripts (cargar en este orden) -->
   <script src="/js/app.js" defer></script>
   <script src="/js/auth.js" defer></script>
   <script src="/js/reservas.js" defer></script>
-  <script src="/js/calificaciones.js" defer></script>
+  <script src="/js/quejas.js" defer></script>
 </head>
-
 <body>
   <header class="site-header site-header--over-hero">
     <div class="container">
@@ -35,6 +32,7 @@
     </div>
   </header>
 
+  <!-- Banner Reservas -->
   <section class="hero hero--reservas" aria-label="Reservas">
     <div class="hero-inner">
       <h1 class="hero-title">Reserva tu habitación</h1>
@@ -96,13 +94,85 @@
         <p class="section-subtitle" id="resSubtitle">Selecciona fechas para ver opciones.</p>
       </div>
 
-      <!-- Grid de tarjetas de habitaciones (se llena con JS) -->
       <div class="res-grid" id="resultsGrid" aria-live="polite"></div>
-
-      <!-- Mensaje de estado / sin resultados -->
       <p id="resMsg" class="book-msg" style="text-align:center"></p>
     </div>
   </main>
+
+  <div class="res-overlay" id="resOverlay" hidden>
+    <section class="res-drawer" role="dialog" aria-modal="true" aria-labelledby="resvTitle">
+      <header class="res-drawer__head">
+        <h3 id="resvTitle">Confirmar reserva</h3>
+        <button class="res-close" id="resClose" aria-label="Cerrar">×</button>
+      </header>
+
+      <div class="res-drawer__body" id="resvBody"></div>
+
+      <footer class="res-drawer__foot">
+        <button class="luxe-btn" id="resCancel">Cancelar</button>
+        <button class="luxe-btn luxe-btn--primary" id="resConfirm">Sí</button>
+      </footer>
+    </section>
+  </div>
+
+  <section>
+    <ul class="benefits" aria-label="Beneficios incluidos">
+      <li class="benefit">
+        <span class="ic ic-cancel" aria-hidden="true"></span>
+        Cancelación flexible
+      </li>
+      <li class="benefit">
+        <span class="ic ic-break" aria-hidden="true"></span>
+        Desayuno incluido
+      </li>
+      <li class="benefit">
+        <span class="ic ic-wifi" aria-hidden="true"></span>
+        Wi-Fi Premium
+      </li>
+    </ul>
+  </section>
+
+  <div id="editOverlay" class="res-overlay" hidden>
+    <div class="res-drawer res-drawer--edit" role="dialog" aria-modal="true">
+      <div class="res-drawer__head">
+        <h3>Editar reserva</h3>
+        <button id="editClose" class="res-close" aria-label="Cerrar">×</button>
+      </div>
+      <div class="res-drawer__body">
+        <div class="edit-grid">
+          <label class="rf-field">
+            <span>Nueva entrada</span>
+            <input type="date" id="editCheckin">
+          </label>
+
+          <label class="rf-field">
+            <span>Nueva salida</span>
+            <input type="date" id="editCheckout">
+          </label>
+
+          <button id="editSave" class="luxe-btn luxe-btn--primary btn-commit" type="button">
+            <span class="btn-commit__label">Guardar</span>
+          </button>
+        </div>
+
+        <div class="edit-preview" aria-live="polite">
+          <div class="preview-pill">
+            <span class="pp-k">Noches</span>
+            <span class="pp-v" id="editNights">—</span>
+          </div>
+          <div class="preview-pill">
+            <span class="pp-k">Total estimado</span>
+            <span class="pp-v" id="editTotal">—</span>
+          </div>
+        </div>
+
+        <p class="res-note">Validamos disponibilidad y que no se cruce con otras reservas tuyas.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="luxe-auth" id="luxeAuth" aria-hidden="true">
+  </div>
 
   <section id="myBookingsSec" class="section-hotels" hidden>
     <div class="container">
@@ -114,137 +184,10 @@
     </div>
   </section>
 
-  <section class="section-hotels" aria-label="Quejas y reclamos">
-    <div class="container">
-      <div id="contenedorQuejas" class="quejas-container"></div> <!-- ✅ NUEVO -->
-    </div>
+  <section>
+    <div class="container" id="contenedorQuejas"></div>
   </section>
-</section>
-<!-- ===== AUTH LUXE MODAL ===== -->
-<div class="luxe-auth" id="luxeAuth" aria-hidden="true">
-  <div class="luxe-auth__overlay" data-close></div>
-
-  <section class="luxe-auth__card" role="dialog" aria-modal="true" aria-labelledby="luxeAuthTitle">
-    <!-- Lado visual -->
-    <aside class="luxe-auth__side" aria-hidden="true">
-      <div class="luxe-auth__brand">
-        <span class="luxe-auth__logo">RC</span>
-        <strong>El Rincón del Carmen</strong>
-      </div>
-      <p class="luxe-auth__tag">Hospitalidad de autor</p>
-    </aside>
-
-    <!-- Panel formularios -->
-    <div class="luxe-auth__panel">
-      <header class="luxe-auth__head">
-        <h2 id="luxeAuthTitle" class="luxe-auth__title">
-          <span class="state-login">Iniciar sesión</span>
-          <span class="state-register">Crear cuenta</span>
-        </h2>
-        <button class="luxe-auth__close" data-close aria-label="Cerrar">×</button>
-      </header>
-
-      <!-- LOGIN -->
-      <form id="luxeLogin" class="luxe-form state-login" novalidate>
-        <label class="luxe-field">
-          <span>Correo electrónico</span>
-          <input type="email" name="email" placeholder="tucorreo@dominio.com" required>
-        </label>
-
-        <label class="luxe-field">
-          <span>Contraseña</span>
-          <div class="luxe-pass">
-            <input type="password" name="password" placeholder="••••••••" required>
-            <button class="luxe-eye" type="button" aria-label="Mostrar/ocultar contraseña">👁</button>
-          </div>
-        </label>
-
-        <div class="luxe-row">
-          <label class="luxe-check">
-            <input type="checkbox" name="remember">
-            <span>Recuérdame</span>
-          </label>
-          <a href="#" class="luxe-link" id="luxeForgot">¿Olvidaste tu contraseña?</a>
-        </div>
-
-        <button class="luxe-btn luxe-btn--primary" type="submit">Entrar</button>
-
-        <p class="luxe-swap">
-          ¿No tienes cuenta?
-          <button class="luxe-link-btn" type="button" id="goRegister">Crear cuenta</button>
-        </p>
-
-        <p class="luxe-msg" id="luxeLoginMsg" role="status" aria-live="polite"></p>
-      </form>
-
-      <!-- REGISTRO -->
-      <form id="luxeRegister" class="luxe-form state-register" novalidate>
-        <label class="luxe-field">
-          <span>Nombre</span>
-          <input type="text" name="name" placeholder="Tu nombre" required>
-        </label>
-
-        <label class="luxe-field">
-          <span>Correo electrónico</span>
-          <input type="email" name="email" placeholder="tucorreo@dominio.com" required>
-        </label>
-
-        <label class="luxe-field">
-          <span>Contraseña</span>
-          <div class="luxe-pass">
-            <input type="password" name="password" minlength="6" placeholder="Mínimo 6 caracteres" required>
-            <button class="luxe-eye" type="button" aria-label="Mostrar/ocultar contraseña">👁</button>
-          </div>
-        </label>
-
-        <!-- WIDGET DE CONTRASEÑA INTEGRADO -->
-        <div class="pw-widget" id="pwWidget">
-          <div class="pw-lock" aria-hidden="true">
-            <svg class="ring" viewBox="0 0 52 52" width="52" height="52">
-              <defs>
-                <linearGradient id="pwGradient" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%"  stop-color="#f59e0b"/>
-                  <stop offset="50%" stop-color="var(--color-brand)"/>
-                  <stop offset="100%" stop-color="#22c55e"/>
-                </linearGradient>
-              </defs>
-              <circle class="bg"   cx="26" cy="26" r="18"></circle>
-              <circle class="prog" cx="26" cy="26" r="18"></circle>
-            </svg>
-            <span class="icon">🔒</span>
-          </div>
-
-          <div class="pw-label" id="pwLabel">Seguridad: —</div>
-          <div class="pw-meter"><div class="fill" id="pwFill"></div></div>
-
-          <ul class="pw-tips" id="pwTips">
-            <li data-k="len">6+ caracteres</li>
-            <li data-k="uc">Mayúscula</li>
-            <li data-k="lc">Minúscula</li>
-            <li data-k="num">Número</li>
-            <li data-k="sym">Símbolo</li>
-          </ul>
-        </div>
-        <!-- /WIDGET -->
-
-        <label class="luxe-check">
-          <input type="checkbox" name="terms" required>
-          <span>Acepto los términos y condiciones</span>
-        </label>
-
-        <button class="luxe-btn luxe-btn--primary" type="submit">Registrarme</button>
-
-        <p class="luxe-swap">
-          ¿Ya tienes cuenta?
-          <button class="luxe-link-btn" type="button" id="goLogin">Iniciar sesión</button>
-        </p>
-
-        <p class="luxe-msg" id="luxeRegMsg" role="status" aria-live="polite"></p>
-      </form>
-    </div>
-  </section>
-
-  <!-- ===== FOOTER ===== -->
+  
   <footer class="luxe-footer">
     <div class="container footer-grid">
       <div class="footer-brand">
@@ -252,7 +195,6 @@
           <span class="logo-foot">RC</span>
           <strong>El Rincón del Carmen</strong>
         </a>
-
         <label class="country-select" aria-label="Seleccionar país">
           <span class="flag">🇨🇴</span>
           <select id="countrySelect">
