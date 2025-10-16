@@ -99,7 +99,7 @@
     if (fCityBookings) fCityBookings.innerHTML = makeOpts(cities);
   }
 
-  /* ================== UI Helpers: Toast ================== */
+  /* ================== Toast ================== */
   function showToast(msg){
     let t = document.getElementById('admToast');
     if(!t){
@@ -257,9 +257,240 @@
     if (!overlay) return;
     overlay.classList.remove('is-open');
     setTimeout(()=> overlay.style.display='none', 160);
-    // restaurar scroll del fondo
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
+  }
+
+  /* ================== Modal EDITAR Reserva ================== */
+  function ensureBookingModal(){
+    if (document.getElementById('bookingOverlay')) return;
+    const html = `
+    <div class="adm-overlay" id="bookingOverlay" style="display:none">
+      <section class="adm-modal" role="dialog" aria-modal="true" aria-labelledby="bookingModalTitle">
+        <header class="adm-modal__head">
+          <h3 id="bookingModalTitle">Editar reserva</h3>
+          <button class="adm-close" data-close>×</button>
+        </header>
+
+        <form id="bookingForm" class="adm-form">
+          <div class="adm-grid-2">
+            <label>Huésped
+              <input type="text" id="bkName" required placeholder="Nombre y apellido">
+            </label>
+            <label>Correo
+              <input type="email" id="bkEmail" required placeholder="correo@ejemplo.com">
+            </label>
+            <label>Entrada
+              <input type="date" id="bkIn" required>
+            </label>
+            <label>Salida
+              <input type="date" id="bkOut" required>
+            </label>
+            <label>Habitación
+              <input type="text" id="bkRoom" disabled>
+            </label>
+            <label>Ciudad
+              <input type="text" id="bkCity" disabled>
+            </label>
+            <label>Noches
+              <input type="number" id="bkNights" disabled>
+            </label>
+            <label>Total (COP)
+              <input type="text" id="bkTotal" disabled>
+            </label>
+          </div>
+
+          <footer class="adm-modal__foot">
+            <button type="button" class="adm-btn" data-close>Cancelar</button>
+            <button type="submit" class="adm-btn adm-btn--primary">Guardar</button>
+          </footer>
+        </form>
+      </section>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    const overlay = document.getElementById('bookingOverlay');
+    overlay.addEventListener('click', (e)=>{
+      if (e.target === overlay || e.target.closest('[data-close]')) closeBookingModal();
+    });
+  }
+
+  function openBookingModal(booking, room, onSave){
+    ensureBookingModal();
+
+    const overlay = document.getElementById('bookingOverlay');
+    const form    = document.getElementById('bookingForm');
+    const title   = document.getElementById('bookingModalTitle');
+
+    // Prefill
+    $('#bkName').value  = booking.userName || '';
+    $('#bkEmail').value = booking.userEmail || '';
+    $('#bkIn').value    = toISO(new Date(booking.start));
+    $('#bkOut').value   = toISO(new Date(booking.end));
+    $('#bkRoom').value  = room.name || '—';
+    $('#bkCity').value  = room.city || '—';
+
+    const price = Number(room.priceNow || 0);
+
+    const recalc = () => {
+      const s = parseLocal($('#bkIn').value);
+      const e = parseLocal($('#bkOut').value);
+      let nights = (s && e) ? Math.max(0, diffDays(s,e)) : 0;
+      $('#bkNights').value = nights;
+      $('#bkTotal').value  = formatCOP(nights * price);
+    };
+    $('#bkIn').onchange = $('#bkOut').onchange = recalc;
+    recalc();
+
+    title.textContent = 'Editar reserva';
+    overlay.style.display = 'block';
+    requestAnimationFrame(()=> overlay.classList.add('is-open'));
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    form.onsubmit = (ev)=>{
+      ev.preventDefault();
+
+      const inStr  = $('#bkIn').value;
+      const outStr = $('#bkOut').value;
+      const s = parseLocal(inStr);
+      const e2 = parseLocal(outStr);
+      if (!s || !e2 || e2 <= s){ showToast('Fechas inválidas'); return; }
+
+      const all = getBookings();
+      const overlapRoom = all.some(x => x.id !== booking.id && x.roomId === booking.roomId &&
+        overlap(s, e2, new Date(x.start), new Date(x.end)));
+      if (overlapRoom){ showToast('Se cruza con otra reserva'); return; }
+
+      const nights = diffDays(s, e2);
+      const total  = nights * price;
+
+      const data = {
+        ...booking,
+        userName: $('#bkName').value.trim(),
+        userEmail: $('#bkEmail').value.trim(),
+        start: s.toISOString(),
+        end:   e2.toISOString(),
+        total,
+        updatedAt: new Date().toISOString()
+      };
+
+      onSave?.(data);
+      closeBookingModal();
+    };
+  }
+
+  function closeBookingModal(){
+    const overlay = document.getElementById('bookingOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    setTimeout(()=> overlay.style.display='none', 160);
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+
+  /* ================== Modal ELIMINAR Reserva (nuevo) ================== */
+  function ensureDeleteBookingModal(){
+    if (document.getElementById('delBkOverlay')) return;
+
+    const html = `
+    <div class="adm-overlay" id="delBkOverlay" style="display:none">
+      <section class="adm-modal" role="dialog" aria-modal="true" aria-labelledby="delBkTitle">
+        <header class="adm-modal__head">
+          <h3 id="delBkTitle">Eliminar reserva</h3>
+          <button class="adm-close" data-close>×</button>
+        </header>
+
+        <form class="adm-form" id="delBkForm">
+          <div class="adm-grid-2">
+            <label>Habitación
+              <input type="text" id="dbkRoom" disabled>
+            </label>
+            <label>Ciudad
+              <input type="text" id="dbkCity" disabled>
+            </label>
+            <label>Huésped
+              <input type="text" id="dbkGuest" disabled>
+            </label>
+            <label>Correo
+              <input type="text" id="dbkEmail" disabled>
+            </label>
+            <label>Entrada
+              <input type="text" id="dbkIn" disabled>
+            </label>
+            <label>Salida
+              <input type="text" id="dbkOut" disabled>
+            </label>
+            <label>Noches
+              <input type="text" id="dbkNights" disabled>
+            </label>
+            <label>Total
+              <input type="text" id="dbkTotal" disabled>
+            </label>
+          </div>
+
+          <div style="margin-top:.4rem;color:var(--adm-soft)">
+            ¿Seguro que deseas <b>eliminar</b> esta reserva? Esta acción no se puede deshacer.
+          </div>
+
+          <footer class="adm-modal__foot">
+            <button type="button" class="adm-btn" data-close>Cancelar</button>
+            <button type="submit" class="adm-btn adm-btn--danger">Eliminar</button>
+          </footer>
+        </form>
+      </section>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    const overlay = document.getElementById('delBkOverlay');
+    overlay.addEventListener('click', (e)=>{
+      if (e.target === overlay || e.target.closest('[data-close]')) closeDeleteBookingModal(false);
+    });
+    document.addEventListener('keydown', (ev)=>{
+      if (overlay.classList.contains('is-open') && ev.key === 'Escape') closeDeleteBookingModal(false);
+    });
+  }
+
+  function openDeleteBookingModal(booking, room){
+    ensureDeleteBookingModal();
+    const overlay = document.getElementById('delBkOverlay');
+    const form    = document.getElementById('delBkForm');
+
+    const nights = (()=>{ try { return diffDays(new Date(booking.start), new Date(booking.end)); } catch { return 0; } })();
+    $('#dbkRoom').value   = room.name || '—';
+    $('#dbkCity').value   = room.city || '—';
+    $('#dbkGuest').value  = booking.userName || '—';
+    $('#dbkEmail').value  = booking.userEmail || '—';
+    $('#dbkIn').value     = fmtDate(booking.start);
+    $('#dbkOut').value    = fmtDate(booking.end);
+    $('#dbkNights').value = String(nights);
+    $('#dbkTotal').value  = formatCOP(booking.total || 0);
+
+    overlay.style.display = 'block';
+    requestAnimationFrame(()=> overlay.classList.add('is-open'));
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    return new Promise((resolve)=>{
+      overlay._resolver = resolve;
+      form.onsubmit = (ev)=>{
+        ev.preventDefault();
+        closeDeleteBookingModal(true);
+      };
+    });
+  }
+
+  function closeDeleteBookingModal(result){
+    const overlay = document.getElementById('delBkOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    setTimeout(()=> overlay.style.display='none', 160);
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    if (overlay._resolver){
+      overlay._resolver(result === true);
+      overlay._resolver = null;
+    }
   }
 
   /* ================== Render: Habitaciones ================== */
@@ -329,7 +560,7 @@
 
     if (btnDel){
       const id = btnDel.getAttribute('data-del');
-      if (!confirm('¿Eliminar esta habitación?')) return;
+      if (!confirm('¿Eliminar esta habitación?')) return; // (si quieres también lo paso a modal luego)
       const rooms = getRooms().filter(r=>r.id!==id);
       saveRooms(rooms);
       fillCityFilters();
@@ -389,11 +620,18 @@
     const all   = getBookings();
 
     if (btnDel){
-      const id = btnDel.getAttribute('data-bkdel');
-      if (!confirm('¿Eliminar esta reserva?')) return;
-      saveBookings(all.filter(x => x.id !== id));
-      renderBookings();
-      showToast('Reserva eliminada');
+      const id   = btnDel.getAttribute('data-bkdel');
+      const bk   = all.find(x => x.id === id);
+      const room = rooms.find(r => r.id === bk?.roomId) || {};
+      if (!bk){ showToast('Reserva no encontrada'); return; }
+
+      // Modal interactivo de eliminación
+      openDeleteBookingModal(bk, room).then(ok=>{
+        if (!ok) return;
+        saveBookings(all.filter(x => x.id !== id));
+        renderBookings();
+        showToast('Reserva eliminada');
+      });
       return;
     }
 
@@ -404,38 +642,12 @@
       const b = all[idx];
       const room = rooms.find(r=>r.id===b.roomId) || {};
 
-      const newName  = prompt('Nombre del huésped:', b.userName || '') ?? b.userName;
-      const newEmail = prompt('Correo del huésped:', b.userEmail || '') ?? b.userEmail;
-
-      const curIn  = toISO(new Date(b.start));
-      const curOut = toISO(new Date(b.end));
-      const inStr  = prompt('Entrada (YYYY-MM-DD):', curIn)  || curIn;
-      const outStr = prompt('Salida (YYYY-MM-DD):',  curOut) || curOut;
-
-      const s = parseLocal(inStr);
-      const e2 = parseLocal(outStr);
-      if (!s || !e2 || e2 <= s){ showToast('Fechas inválidas'); return; }
-
-      const overlapRoom = all.some(x => x.id !== b.id && x.roomId === b.roomId &&
-        overlap(s, e2, new Date(x.start), new Date(x.end)));
-      if (overlapRoom){ showToast('Se cruza con otra reserva'); return; }
-
-      const nights = diffDays(s, e2);
-      const price  = Number(room.priceNow || 0);
-      const total  = nights * price;
-
-      all[idx] = {
-        ...b,
-        userName: newName,
-        userEmail: newEmail,
-        start: s.toISOString(),
-        end:   e2.toISOString(),
-        total,
-        updatedAt: new Date().toISOString()
-      };
-      saveBookings(all);
-      renderBookings();
-      showToast('Reserva actualizada');
+      openBookingModal(b, room, (updated) => {
+        all[idx] = updated;
+        saveBookings(all);
+        renderBookings();
+        showToast('Reserva actualizada');
+      });
     }
   });
 

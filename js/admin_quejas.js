@@ -4,25 +4,20 @@
   const $  = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 
-  /* ------------ storage ------------ */
   const TKEY = 'erc_quejas';
   const getTickets  = () => JSON.parse(localStorage.getItem(TKEY) || '[]');
   const saveTickets = (arr) => localStorage.setItem(TKEY, JSON.stringify(arr));
 
-  /* ------------ utils ------------ */
-  const fmtDate = (iso) => {
-    try { return new Date(iso).toLocaleDateString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit'}); }
-    catch { return iso || '—'; }
-  };
+  const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit'});} catch { return iso||'—'; } };
   const esc = (s) => String(s ?? '')
     .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
     .replaceAll('"','&quot;').replaceAll("'",'&#039;');
 
   const table = $('#quejasTable');
-  const tbody = table?.querySelector('tbody');
+  const tbody = $('#quejasTable tbody');
   if (!table || !tbody) return;
 
-  /* ========= 1) normalizar tickets legados ========= */
+  /* ========= Normalizar tickets legados ========= */
   function normalizeTickets() {
     const items = getTickets();
     let changed = false;
@@ -30,104 +25,282 @@
     const norm = items.map(t => {
       const out = { ...t };
 
-      // estado controlado
+      // Estado a minúsculas controladas
       if (typeof out.status === 'string') {
         const s = out.status.toLowerCase();
         if (s !== out.status) { out.status = s; changed = true; }
         if (!['pendiente','resuelto','rechazado'].includes(out.status)) {
           out.status = 'pendiente'; changed = true;
         }
-      } else { out.status = 'pendiente'; changed = true; }
+      } else {
+        out.status = 'pendiente'; changed = true;
+      }
 
-      // tipo consistente
+      // Tipo consistente (Queja / Reclamo con inicial mayúscula)
       if (typeof out.type === 'string') {
         const tl = out.type.trim().toLowerCase();
         const fixed = tl === 'reclamo' ? 'Reclamo' : 'Queja';
         if (fixed !== out.type) { out.type = fixed; changed = true; }
       } else { out.type = 'Queja'; changed = true; }
 
-      // usuario
-      if (!('userName' in out))  { out.userName = ''; changed = true; }
-      if (!('userEmail' in out)) { out.userEmail = ''; changed = true; }
+      // Campos de usuario
+      if (!out.userName && out.userEmail) { out.userName = ''; changed = true; }
+      if (!out.userEmail && out.userName) { out.userEmail = ''; changed = true; }
 
-      // snapshot opcional
+      // Snapshot opcional
       if (!out.bookingSnapshot) out.bookingSnapshot = {};
 
       return out;
     });
 
-    if (changed) saveTickets(norm);
+    if (changed) {
+      saveTickets(norm);
+      return true;
+    }
+    return false;
   }
 
-  /* ========= 2) asegurar thead + colgroup (8 columnas) ========= */
-  function ensureQuejasHead() {
+  /* ========= Forzar orden del thead (8 columnas) ========= */
+  function ensureQuejasHeadOrder() {
+    const thead = table.querySelector('thead');
+    if (!thead) return;
+
     const desired = ['ID','Fecha','Tipo','Asunto','Usuario','Estado','Respuesta','Acciones'];
+    const ths = [...thead.querySelectorAll('th')].map(th => th.textContent.trim());
+    if (ths.length === desired.length && ths.every((t,i)=>t === desired[i])) return;
 
-    // thead
-    let thead = table.querySelector('thead');
-    if (!thead) thead = table.insertBefore(document.createElement('thead'), table.firstChild);
-
-    let tr = thead.querySelector('tr');
-    if (!tr) tr = thead.appendChild(document.createElement('tr'));
-
-    const ths = [...tr.querySelectorAll('th')].map(th => th.textContent.trim());
-    const needsBuild = ths.length !== desired.length || ths.some((t,i)=>t !== desired[i]);
-
-    if (needsBuild) {
-      tr.innerHTML = desired.map(t => `<th>${t}</th>`).join('');
-    }
-
-    // colgroup fijo (evita corrimientos)
-    let colgroup = table.querySelector('colgroup[data-quejas-cols]');
-    if (!colgroup) {
-      colgroup = document.createElement('colgroup');
-      colgroup.setAttribute('data-quejas-cols','');
-      table.insertBefore(colgroup, thead);
-    }
-    if (!colgroup.children.length) {
-      // anchos sugeridos, ajusta a tu gusto
-      const widths = ['90px','120px','100px','220px','160px','140px','220px','260px'];
-      colgroup.innerHTML = widths.map(w => `<col style="width:${w}">`).join('');
-    }
+    const row = thead.querySelector('tr') || thead.appendChild(document.createElement('tr'));
+    row.innerHTML = '';
+    desired.forEach(label => {
+      const existing = [...thead.querySelectorAll('th')].find(th => th.textContent.trim() === label);
+      const th = existing || document.createElement('th');
+      if (!existing) th.textContent = label;
+      row.appendChild(th);
+    });
   }
 
-  /* ========= 3) render tbody (8 <td> orden exacto) ========= */
+  /* ========= Modal: Ver ticket ========= */
+  function ensureTicketViewModal(){
+    if (document.getElementById('ticketOverlay')) return;
+    const html = `
+    <div class="adm-overlay" id="ticketOverlay" style="display:none">
+      <section class="adm-modal" role="dialog" aria-modal="true" aria-labelledby="ticketTitle">
+        <header class="adm-modal__head">
+          <h3 id="ticketTitle">Detalle del ticket</h3>
+          <button class="adm-close" data-close>×</button>
+        </header>
+
+        <div class="adm-form" id="ticketBody"><!-- contenido dinámico --></div>
+
+        <footer class="adm-modal__foot">
+          <button type="button" class="adm-btn" data-close>Cerrar</button>
+        </footer>
+      </section>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    const overlay = document.getElementById('ticketOverlay');
+    overlay.addEventListener('click', (e)=>{
+      if (e.target === overlay || e.target.closest('[data-close]')) closeTicketViewModal();
+    });
+    document.addEventListener('keydown',(ev)=>{
+      if (overlay.classList.contains('is-open') && ev.key === 'Escape') closeTicketViewModal();
+    });
+  }
+
+  function openTicketViewModal(t){
+    ensureTicketViewModal();
+    const overlay = document.getElementById('ticketOverlay');
+    const body    = document.getElementById('ticketBody');
+
+    const snap = t.bookingSnapshot || {};
+    const img  = snap.image || t.imageUrl || '';
+
+    const statusBadge = (t.status === 'resuelto')
+      ? '<span class="badge-resuelto"><span class="chk">✓</span>Resuelto</span>'
+      : esc(t.status || 'pendiente');
+
+    const kv = (k,v) => `
+      <div class="kv">
+        <div class="kv__label">${k}</div>
+        <div class="kv__value">${v}</div>
+      </div>`;
+
+    const metaHTML = [
+      kv('Ticket',  esc(t.id || '—')),
+      kv('Fecha',   esc(fmtDate(t.createdAt))),
+      kv('Usuario', esc(t.userName || t.userEmail || '—')),
+      kv('Reserva', esc(t.bookingLabel || '—')),
+      kv('Tipo',    esc(t.type || '—')),
+      kv('Asunto',  esc(t.subject || '—')),
+      kv('Estado',  statusBadge)
+    ].join('');
+
+    const imgHTML = img
+      ? `<img src="${esc(img)}" alt="Imagen del ticket" class="ticket-img">`
+      : `<div class="box" style="display:grid;place-items:center;height:220px;color:var(--adm-soft)">Sin imagen</div>`;
+
+    body.innerHTML = `
+      <div class="view-grid">
+        <div class="view-meta">
+          ${metaHTML}
+        </div>
+        <figure class="view-figure">
+          ${imgHTML}
+        </figure>
+      </div>
+
+      <div class="view-section">
+        <h4>Descripción</h4>
+        <div class="box">${esc(t.description || '—')}</div>
+      </div>
+
+      <div class="view-section">
+        <h4>Respuesta</h4>
+        <div class="box">${t.response?.text ? esc(t.response.text) : '<span style="opacity:.7">(sin respuesta)</span>'}</div>
+      </div>
+    `;
+
+    overlay.style.display = 'block';
+    requestAnimationFrame(()=> overlay.classList.add('is-open'));
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeTicketViewModal(){
+    const overlay = document.getElementById('ticketOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    setTimeout(()=> overlay.style.display='none', 160);
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+
+  /* ========= Modal: Responder ticket (NUEVO) ========= */
+  function ensureTicketRespondModal(){
+    if (document.getElementById('respondOverlay')) return;
+    const html = `
+    <div class="adm-overlay" id="respondOverlay" style="display:none">
+      <section class="adm-modal" role="dialog" aria-modal="true" aria-labelledby="respondTitle">
+        <header class="adm-modal__head">
+          <h3 id="respondTitle">Responder ticket</h3>
+          <button class="adm-close" data-close>×</button>
+        </header>
+
+        <form class="adm-form" id="respondForm">
+          <div class="adm-grid-2">
+            <label>Usuario
+              <input type="text" id="rUser" disabled>
+            </label>
+            <label>Asunto
+              <input type="text" id="rSubject" disabled>
+            </label>
+            <label>Estado
+              <select id="rStatus" required>
+                <option value="resuelto">Resuelto</option>
+                <option value="rechazado">Rechazado</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="adm-grid-span">Respuesta para el huésped
+            <textarea id="rText" rows="6" required placeholder="Escribe aquí la respuesta…"></textarea>
+          </label>
+
+          <footer class="adm-modal__foot">
+            <button type="button" class="adm-btn" data-close>Cancelar</button>
+            <button type="submit" class="adm-btn adm-btn--primary">Guardar</button>
+          </footer>
+        </form>
+      </section>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    const overlay = document.getElementById('respondOverlay');
+    overlay.addEventListener('click', (e)=>{
+      if (e.target === overlay || e.target.closest('[data-close]')) closeTicketRespondModal();
+    });
+    document.addEventListener('keydown',(ev)=>{
+      if (overlay.classList.contains('is-open') && ev.key === 'Escape') closeTicketRespondModal();
+    });
+  }
+
+  function openTicketRespondModal(ticket, onSave){
+    ensureTicketRespondModal();
+
+    const overlay = document.getElementById('respondOverlay');
+    const form    = document.getElementById('respondForm');
+
+    // Prefill
+    $('#rUser').value    = ticket.userName || ticket.userEmail || '—';
+    $('#rSubject').value = ticket.subject || '—';
+    $('#rStatus').value  = (['resuelto','rechazado'].includes(ticket.status) ? ticket.status : 'resuelto');
+    $('#rText').value    = '';
+
+    overlay.style.display = 'block';
+    requestAnimationFrame(()=> overlay.classList.add('is-open'));
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    form.onsubmit = (ev)=>{
+      ev.preventDefault();
+      const text = $('#rText').value.trim();
+      const st   = $('#rStatus').value;
+      if (!text) return;
+
+      const admin = window.ErcAuth?.getSession?.()?.email || 'admin';
+      const updated = {
+        ...ticket,
+        status: st,
+        response: { text, respondedAt: new Date().toISOString(), adminEmail: admin }
+      };
+
+      onSave?.(updated);
+      closeTicketRespondModal();
+    };
+  }
+
+  function closeTicketRespondModal(){
+    const overlay = document.getElementById('respondOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    setTimeout(()=> overlay.style.display='none', 160);
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+
+  /* ========= Render ========= */
   function renderAdminTickets() {
-    normalizeTickets();
-    ensureQuejasHead();
+    const updated = normalizeTickets();
+    if (updated) {}
+
+    ensureQuejasHeadOrder();
 
     const items = getTickets().sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+    if (!items.length){ tbody.innerHTML = `<tr><td colspan="8">No hay quejas ni reclamos registrados.</td></tr>`; return; }
 
-    if (!items.length) {
-      tbody.innerHTML = `<tr><td colspan="8" class="adm-empty">No hay quejas ni reclamos registrados.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = items.map(t => {
-      const idShort     = esc((t.id||'').slice(0,8));
-      const fecha       = fmtDate(t.createdAt);
-      const tipo        = esc(t.type||'—');
-      const asunto      = esc(t.subject||'—');
-      const usuario     = esc(t.userName || t.userEmail || '—');
-      const isResuelto  = (t.status === 'resuelto');
-      const estadoCell  = isResuelto
+    tbody.innerHTML = items.map(t=>{
+      const idShort = esc((t.id||'').slice(0,8));
+      const date = fmtDate(t.createdAt);
+      const type = esc(t.type||'—');
+      const subj = esc(t.subject||'—');
+      const user = esc(t.userName || t.userEmail || '—');
+      const isResolved = (t.status==='resuelto');
+      const statusCell = isResolved
         ? `<span class="badge-resuelto"><span class="chk">✓</span>Resuelto</span>`
-        : esc(t.status || 'pendiente');
-      const respPrev    = t.response?.text
-        ? esc(t.response.text.slice(0,40)) + (t.response.text.length>40?'…':'')
-        : '<span style="opacity:.7">—</span>';
+        : esc(t.status||'pendiente');
+      const respPrev = t.response?.text ? esc(t.response.text.slice(0,40))+(t.response.text.length>40?'…':'') : '<span style="opacity:.7">—</span>';
       const disableResp = t.response?.text ? 'disabled' : '';
 
-      // ORDEN EXACTO: ID, Fecha, Tipo, Asunto, Usuario, Estado, Respuesta, Acciones
       return `
-        <tr data-id="${esc(t.id)}" class="${isResuelto ? 'row-resuelto' : ''}">
+        <tr data-id="${esc(t.id)}" class="${isResolved?'row-resuelto':''}">
           <td>${idShort}</td>
-          <td>${fecha}</td>
-          <td>${tipo}</td>
-          <td class="td-asunto">${asunto}</td>
-          <td>${usuario}</td>
-          <td>${estadoCell}</td>
-          <td class="td-resp">${respPrev}</td>
+          <td>${date}</td>
+          <td>${type}</td>
+          <td>${subj}</td>
+          <td>${user}</td>
+          <td>${statusCell}</td>
+          <td>${respPrev}</td>
           <td class="td-actions">
             <button class="adm-btn adm-btn--sm" data-view="${esc(t.id)}">Ver</button>
             <button class="adm-btn adm-btn--sm" data-respond="${esc(t.id)}" ${disableResp}>Responder</button>
@@ -139,7 +312,7 @@
     }).join('');
   }
 
-  /* ========= 4) animación mini al resolver ========= */
+  // Mini confetti al marcar "Resuelto"
   function fireResolvedFX(row){
     if (!row) return;
     row.classList.add('row-resuelto-pop');
@@ -160,29 +333,14 @@
     setTimeout(()=> row.classList.remove('row-resuelto-pop'), 600);
   }
 
-  /* ========= 5) acciones ========= */
+  // Acciones admin
   tbody.addEventListener('click', (e) => {
     const viewBtn = e.target.closest('[data-view]');
     if (viewBtn) {
       const id = viewBtn.getAttribute('data-view');
       const t = getTickets().find(x=>x.id===id);
       if (!t) return;
-      const snap = t.bookingSnapshot || {};
-      const summary = `Ticket #${t.id}
-Fecha: ${fmtDate(t.createdAt)}
-Usuario: ${t.userName || t.userEmail || '—'}
-Reserva: ${t.bookingLabel || '—'}
-Tipo: ${t.type || '—'}
-Asunto: ${t.subject || '—'}
-Estado: ${t.status || 'pendiente'}
-
-Descripción:
-${t.description || '—'}
-
-Respuesta:
-${t.response?.text || '(sin respuesta)'}
-Imagen: ${snap.image || '(sin imagen)'}`;
-      alert(summary);
+      openTicketViewModal(t);
       return;
     }
 
@@ -192,14 +350,15 @@ Imagen: ${snap.image || '(sin imagen)'}`;
       const all = getTickets();
       const idx = all.findIndex(x=>x.id===id);
       if (idx === -1) return;
-      if (all[idx].response?.text) { alert('Este ticket ya tiene respuesta.'); return; }
-      const text = prompt('Respuesta para el huésped:');
-      if (!text || !text.trim()) return;
-      const admin = window.ErcAuth?.getSession?.()?.email || 'admin';
-      all[idx].response = { text: text.trim(), respondedAt: new Date().toISOString(), adminEmail: admin };
-      saveTickets(all);
-      renderAdminTickets();
-      window.dispatchEvent(new Event('tickets:changed'));
+      const t = all[idx];
+      if (t.response?.text) return;
+
+      openTicketRespondModal(t, (updated)=>{
+        all[idx] = updated;
+        saveTickets(all);
+        renderAdminTickets();
+        window.dispatchEvent(new Event('tickets:changed'));
+      });
       return;
     }
 
@@ -215,21 +374,24 @@ Imagen: ${snap.image || '(sin imagen)'}`;
       saveTickets(all);
       renderAdminTickets();
       window.dispatchEvent(new Event('tickets:changed'));
+
       if (st === 'resuelto'){
         const row = tbody.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
         fireResolvedFX(row);
       }
+      return;
     }
   });
 
   function boot(){
     normalizeTickets();
-    ensureQuejasHead();
+    ensureQuejasHeadOrder();
     renderAdminTickets();
   }
   document.addEventListener('DOMContentLoaded', boot);
   window.addEventListener('tickets:changed', renderAdminTickets);
   window.addEventListener('auth:login', renderAdminTickets);
   window.addEventListener('auth:logout', renderAdminTickets);
-  document.querySelector('.tabs .tab[data-tab="quejas"]')?.addEventListener('click', renderAdminTickets);
+  const tabBtn = document.querySelector(`.tabs .tab[data-tab="quejas"]`);
+  tabBtn?.addEventListener('click', renderAdminTickets);
 })();

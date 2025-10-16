@@ -241,3 +241,21 @@
   animation:qFall 900ms linear forwards;
 }
 @keyframes qFall{ to { transform: translateY(120vh) rotate(720deg); opacity:0; } }
+
+.view-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;align-items:start}
+@media (max-width: 900px){ .view-grid{grid-template-columns:1fr} }
+
+.view-meta{display:block;background:#0f1115;border:1px solid var(--adm-line);border-radius:12px;padding:10px}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:10px;padding:8px 0;border-bottom:1px dashed var(--adm-line)}
+.kv:last-child{border-bottom:0}
+.kv__label{color:var(--adm-soft);font-weight:700;text-transform:uppercase;font-size:.75rem;letter-spacing:.35px}
+.kv__value{color:var(--adm-text);font-weight:700}
+
+.view-figure img{width:100%;height:auto;border-radius:12px;border:1px solid var(--adm-line);display:block}
+
+.view-section{margin-top:16px}
+.view-section h4{margin:0 0 6px;color:var(--adm-soft);text-transform:uppercase;font-size:.78rem;letter-spacing:.35px}
+.view-section .box{
+  white-space:pre-wrap;background:#0f1115;border:1px solid var(--adm-line);
+  border-radius:12px;padding:10px;color:var(--adm-text)
+}
